@@ -13,8 +13,8 @@ class MerchantApiSpec extends ObjectBehavior
         $this->shouldHaveType(MerchantApi::class);
     }
 
-    function it_is_true()
+    function it_will_get_config()
     {
-        $this->trueTurn()->shouldReturn(true);
+        print_r($this->getConfig());
     }
 }

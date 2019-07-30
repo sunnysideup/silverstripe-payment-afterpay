@@ -16,5 +16,8 @@
     },
     "require-dev": {
         "phpspec/phpspec": "^5.1"
+    },
+    "require": {
+        "culturekings/afterpay": "^2.2"
     }
 }
