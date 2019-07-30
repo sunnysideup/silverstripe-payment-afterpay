@@ -1,0 +1,20 @@
+{
+    "name": "sunnysideup/afterpay",
+    "type": "silverstripe-vendormodule",
+    "description": "Integrate easily with the api.afterpay.com API",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "tristan",
+            "email": "tristan@sunnysideup.co.nz"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Sunnysideup\\Afterpay\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpspec/phpspec": "^5.1"
+    }
+}

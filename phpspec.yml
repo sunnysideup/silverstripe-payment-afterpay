@@ -1,0 +1,4 @@
+suites:
+    culture_kings_afterpay:
+      namespace: Sunnysideup\Afterpay
+      psr4_prefix: Sunnysideup\Afterpay
