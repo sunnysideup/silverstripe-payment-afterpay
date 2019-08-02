@@ -15,6 +15,7 @@ class MerchantApiSpec extends ObjectBehavior
 
     function it_will_get_config()
     {
-        print_r($this->getConfig());
+        MerchantApi::inst(true, 32, 'adasda')
+            ->getConfig();
     }
 }

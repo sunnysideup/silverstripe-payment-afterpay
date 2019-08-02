@@ -15,9 +15,14 @@
         }
     },
     "require-dev": {
-        "phpspec/phpspec": "^5.1"
+        "phpspec/phpspec": "^5.1",
+        "symplify/easy-coding-standard": "^6.0"
     },
     "require": {
         "culturekings/afterpay": "^2.2"
+    },
+    "scripts": {
+        "lint": "vendor/bin/ecs check src --fix",
+        "test": "vendor/bin/phpspec run"
     }
 }
