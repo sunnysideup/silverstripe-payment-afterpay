@@ -8,14 +8,13 @@ use Prophecy\Argument;
 
 class MerchantApiSpec extends ObjectBehavior
 {
-    function it_is_initializable()
-    {
-        $this->shouldHaveType(MerchantApi::class);
-    }
 
     function it_will_get_config()
     {
-        MerchantApi::inst(true, 32, 'adasda')
+        MerchantApi::inst()
+            ->setIsTest(true)
+            ->setMerchantId(32)
+            ->setSecretKey('adasda')
             ->getConfig();
     }
 }
