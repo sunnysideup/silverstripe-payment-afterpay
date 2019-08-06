@@ -35,3 +35,5 @@ When the place order button is pressed, redirect the user to a php page which se
 - what products are on afterpay
 - where is our login
 - how often will min / max change
+- Is only PAY_BY_INSTALLMENT going to be implmented
+- How many currencies are being used
