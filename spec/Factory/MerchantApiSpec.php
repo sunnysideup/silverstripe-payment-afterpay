@@ -7,6 +7,7 @@ use \CultureKings\Afterpay\Model\Merchant\Consumer;
 use \CultureKings\Afterpay\Model\Merchant\MerchantOptions;
 use \CultureKings\Afterpay\Model\Money;
 use \CultureKings\Afterpay\Model\Merchant\OrderDetails;
+use \CultureKings\Afterpay\Model\Merchant\Payment;
 
 use Sunnysideup\Afterpay\Factory\MerchantApi;
 use PhpSpec\ObjectBehavior;
@@ -14,13 +15,14 @@ use Prophecy\Argument;
 
 class MerchantApiSpec extends ObjectBehavior
 {
+
     function it_will_initialize()
     {
         MerchantApi::inst()
             ->setIsTest(true)
             ->setMerchantId(32)
             ->setSecretKey('adasda')
-            ->setServerAvailable(false)
+            ->setIsServerAvailable(false)
             ->logIn();
     }
 
@@ -63,6 +65,11 @@ class MerchantApiSpec extends ObjectBehavior
         MerchantApi::inst()
             ->createOrder($orderDetails);
 
+    }
+
+    function it_should_create_a_payment() {
+        MerchantApi::inst()
+            ->createPayment();
     }
 
 }

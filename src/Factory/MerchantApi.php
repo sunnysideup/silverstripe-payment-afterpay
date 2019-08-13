@@ -11,6 +11,7 @@ use \CultureKings\Afterpay\Model\Merchant\Authorization;
 use \CultureKings\Afterpay\Model\Merchant\Configuration;
 use \CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use \CultureKings\Afterpay\Model\Merchant\OrderToken;
+use \CultureKings\Afterpay\Model\Merchant\Payment;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -26,7 +27,7 @@ class MerchantApi
 
     private $isTest = false;
 
-    private $serverAvailable = true;
+    private $isServerAvailable = true;
 
     private $merchantId = 0;
 
@@ -34,23 +35,25 @@ class MerchantApi
 
     private $authorization = null;
 
-    // -------------- //
-
-    // Afterpay config //
-
-    private $minimumAllowed = [
-        'amount' => 0.00,
-        'currency' => 'NZD',
-    ];
-
-    private $maximumAllowed = [
-        'amount' => 0.00,
-        'currency' => 'NZD',
-    ];
-
     // --------------- //
 
+    /**
+     * Order Token
+     * @var OrderToken
+     */
     private $orderToken = null;
+
+    /**
+     * Payment information
+     * @var Payment
+     */
+    private $paymentInfo = null;
+
+    /**
+     * Configuration information
+     * @var Configuration[]
+     */
+    private $configurationInfo = null;
 
     private static $singleton_cache = null;
 
@@ -111,16 +114,43 @@ class MerchantApi
     }
 
     /**
-     * Setter for server available
+     * Setter for is server available
      * If no server exists then collect fake responses from a cache
      * @param  bool $available Are there any external APIs available
      * @return self            Daisy chain
      */
-    public function setServerAvailable(bool $available): self
+    public function setIsServerAvailable(bool $available): self
     {
-        $this->serverAvailable = $available;
+        $this->isServerAvailable = $available;
 
         return $this;
+    }
+
+    /**
+     * Getter for payment info
+     * @return Payment Object defining the payment details
+     */
+    public function getPaymentInfo(): Payment
+    {
+        return $this->paymentInfo;
+    }
+
+    /**
+     * Getter for is test
+     * @return bool Are we using the live or sandbox API
+     */
+    public function getIsTest(): bool
+    {
+        return $this->isTest;
+    }
+
+    /**
+     * Getter for is server available
+     * @return bool Are any servers available? Otherwise use cache
+     */
+    public function getIsServerAvailable(): bool
+    {
+        return $this->isServerAvailable;
     }
 
     /**
@@ -144,23 +174,16 @@ class MerchantApi
     public function getConfig()
     {
         // Collect the configuration data //
-        if ($this->serverAvailable) {
-            $config = AfterpayApi::configuration($this->authorization)->get();
+        if ($this->isServerAvailable) {
+            $this->configurationInfo = AfterpayApi::configuration($this->authorization)->get();
         } else {
             $json = file_get_contents(__DIR__ . '/../expectations/configuration_details.json');
 
-            $config = SerializerFactory::getSerializer()->deserialize(
+            $this->configurationInfo = SerializerFactory::getSerializer()->deserialize(
                 (string) $json,
                 sprintf('array<%s>', Configuration::class),
                 'json'
             );
-        }
-
-        foreach ($config as $value) {
-            /*if ($value['type'] === 'PAY_BY_INSTALLMENT') {
-                $this->minimumAllowed = $value['minimumAmount'];
-                $this->maximumAllowed = $value['maximumAmount'];
-            }*/
         }
     }
 
@@ -171,10 +194,17 @@ class MerchantApi
      */
     public function canProcessPayment(float $price): bool
     {
-        if ($price > $this->maximumAllowed['amount']) {
+        foreach ($this->configurationInfo as $config) {
+            if($config->getType() == 'PAY_BY_INSTALLMENT') {
+                $maximumAllowed = $config->getMaximumAmount()->getAmount();
+                $minimumAllowed = $config->getMinimumAmount()->getAmount();
+            }
+        }
+
+        if ($price > $maximumAllowed) {
             return false;
         }
-        if ($price < $this->minimumAllowed['amount']) {
+        if ($price < $minimumAllowed) {
             return false;
         }
         return true;
@@ -205,13 +235,39 @@ class MerchantApi
     {
 
         // Create the order, collect the token //
-        if ($this->serverAvailable) {
+        if ($this->isServerAvailable) {
             $this->orderToken = AfterpayApi::orders($this->authorization)->create($order);
         } else {
             $json = file_get_contents(__DIR__ . '/../expectations/order_create_response.json');
             $this->orderToken = SerializerFactory::getSerializer()->deserialize(
                 (string) $json,
                 OrderToken::class,
+                'json'
+            );
+        }
+    }
+
+    /**
+     * Capture the payment after the order has been placed
+     * @param  string $merchantReference Optional: Update the merchant reference
+     */
+    public function createPayment(string $merchantReference = '')
+    {
+        // Create the payment, collect the token //
+        if ($this->isServerAvailable) {
+            if ($this->orderToken !== null) {
+                $this->paymentInfo = AfterpayApi::payments($this->authorization)->capture(
+                    $this->orderToken,
+                    $merchantReference
+                );
+            } else {
+                user_error('No order token found, please create an order before processing a payment');
+            }
+        } else {
+            $json = file_get_contents(__DIR__ . '/../expectations/payments_get_response.json');
+            $this->paymentInfo = SerializerFactory::getSerializer()->deserialize(
+                (string) $json,
+                Payment::class,
                 'json'
             );
         }
