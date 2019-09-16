@@ -195,7 +195,7 @@ class MerchantApi
     public function canProcessPayment(float $price): bool
     {
         foreach ($this->configurationInfo as $config) {
-            if($config->getType() == 'PAY_BY_INSTALLMENT') {
+            if ($config->getType() === 'PAY_BY_INSTALLMENT') {
                 $maximumAllowed = $config->getMaximumAmount()->getAmount();
                 $minimumAllowed = $config->getMinimumAmount()->getAmount();
             }
