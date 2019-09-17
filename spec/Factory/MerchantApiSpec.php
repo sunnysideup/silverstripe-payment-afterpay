@@ -20,9 +20,9 @@ class MerchantApiSpec extends ObjectBehavior
     {
         MerchantApi::inst()
             ->setIsTest(true)
-            ->setMerchantId(32)
-            ->setSecretKey('adasda')
-            ->setIsServerAvailable(false)
+            ->setMerchantId("40533")
+            ->setSecretKey("5c56d08277b246c08272fd93e96616d3")
+            ->setIsServerAvailable(true)
             ->logIn();
     }
 
