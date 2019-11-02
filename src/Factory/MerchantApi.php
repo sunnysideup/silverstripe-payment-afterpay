@@ -2,40 +2,95 @@
 
 namespace Sunnysideup\Afterpay\Factory;
 
-use \CultureKings\Afterpay\Factory\MerchantApi as AfterpayApi;
+use CultureKings\Afterpay\Factory\MerchantApi as AfterpayApi;
 
-use \CultureKings\Afterpay\Factory\SerializerFactory;
+use CultureKings\Afterpay\Factory\SerializerFactory;
 
 // Models for Data //
-use \CultureKings\Afterpay\Model\Merchant\Authorization;
-use \CultureKings\Afterpay\Model\Merchant\Configuration;
-use \CultureKings\Afterpay\Model\Merchant\OrderDetails;
-use \CultureKings\Afterpay\Model\Merchant\OrderToken;
-use \CultureKings\Afterpay\Model\Merchant\Payment;
+use CultureKings\Afterpay\Model\Merchant\Authorization;
+use CultureKings\Afterpay\Model\Merchant\Configuration;
+use CultureKings\Afterpay\Model\Merchant\OrderDetails;
+use CultureKings\Afterpay\Model\Merchant\OrderToken;
+use CultureKings\Afterpay\Model\Merchant\Payment;
+
+
+use Object;
+use Director;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
  * @author Tristan Mastrodicasa
  */
-class MerchantApi
+class MerchantApi extends Object
 {
-    // API connection //
+
+
+    ############################
+    # global settings
+    ############################
 
     private const CONNECTION_URL_TEST = 'https://api-sandbox.afterpay.com/v1/';
 
     private const CONNECTION_URL_LIVE = 'https://api-sandbox.afterpay.com/v1/';
 
+    private static $merchant_id = 0;
+
+    private static $secret_key = '';
+
+    private static $number_of_payments = 4;
+
+    /**
+     * see: afterpay/src/expectations/configuration_details.json as an example
+     * @var string
+     */
+    private static $location_for_configuration_file = '';
+
+
+    ############################
+    # global instance settings
+    ############################
+
+    /**
+     *
+     * @var float
+     */
+    private $minPrice = 0;
+
+
+    /**
+     *
+     * @var float
+     */
+    private $maxPrice = 0;
+
+
+    /**
+     *
+     * @var bool
+     */
     private $isTest = false;
 
+    /**
+     *
+     * @var bool
+     */
     private $isServerAvailable = true;
 
-    private $merchantId = 0;
 
-    private $secretKey = '';
+
+    ############################
+    # internal variables
+    ############################
+
 
     private $authorization = null;
 
-    // --------------- //
+
+    /**
+     * Configuration information
+     * @var Configuration[]
+     */
+    private $configurationInfo = null;
 
     /**
      * Order Token
@@ -49,13 +104,18 @@ class MerchantApi
      */
     private $paymentInfo = null;
 
-    /**
-     * Configuration information
-     * @var Configuration[]
-     */
-    private $configurationInfo = null;
 
-    private static $singleton_cache = null;
+
+
+    ############################
+    # instance
+    ############################
+
+    /**
+     * this
+     * @var MerchantApi|null
+     */
+    protected static $singleton_cache = null;
 
     public function __construct(string $initMethod = 'instance')
     {
@@ -73,21 +133,20 @@ class MerchantApi
         if (self::$singleton_cache === null) {
             self::$singleton_cache = new self('singleton');
         }
+        self::$singleton_cache->setIsTest(Director::isLive() ? false : true);
 
         return self::$singleton_cache;
     }
 
-    /**
-     * Setter for merchant id
-     * @param  int  $id The merchant id for authentication
-     * @return self     Daisy chain
-     */
-    public function setMerchantId(int $id): self
-    {
-        $this->merchantId = $id;
 
-        return $this;
-    }
+
+
+
+
+
+    ############################
+    # setters
+    ############################
 
     /**
      * Setter for is test
@@ -97,18 +156,6 @@ class MerchantApi
     public function setIsTest(bool $isTest): self
     {
         $this->isTest = $isTest;
-
-        return $this;
-    }
-
-    /**
-     * Setter for secret key
-     * @param  string $secretKey A unique key to authenticate the user
-     * @return self              Daisy chain
-     */
-    public function setSecretKey(string $secretKey): self
-    {
-        $this->secretKey = $secretKey;
 
         return $this;
     }
@@ -126,13 +173,52 @@ class MerchantApi
         return $this;
     }
 
+
+
     /**
-     * Getter for payment info
-     * @return Payment Object defining the payment details
+     * set the minimum and maximum price to use Afterpay
+     * This can overrule settings from Afterpay server
+     * and therefore make it faster ...
+     * @param  float $minPrice
+     * @param  float $maxPrice
+     * @return self
      */
-    public function getPaymentInfo(): Payment
+    public function setMinAndMaxPrice(float $minPrice, float $maxPrice): self
     {
-        return $this->paymentInfo;
+        $this->minPrice = $minPrice;
+        $this->maxPrice = $maxPrice;
+
+        return $this;
+    }
+
+
+
+
+
+    ############################
+    # getters
+    ############################
+
+
+    public function getNumberOfPayments() : int
+    {
+        return $this->Config()->get('number_of_payments');
+    }
+
+    public function getLocationForConfigFile() : string
+    {
+        $relativeFileName = $this->Config()->get('location_for_configuration_file');
+        if($relativeFileName) {
+            $absoluteFileName = Director::baseFolder() . '/' . $relativeFileName;
+            if(file_exists($absoluteFileName)) {
+
+                return $absoluteFileName;
+            } else {
+                user_error('bad location_for_configuration_file specified: '.$absoluteFileName);
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -153,39 +239,18 @@ class MerchantApi
         return $this->isServerAvailable;
     }
 
-    /**
-     * Initialize the authorization feild with the set merchant id and secret key
-     */
-    public function logIn(): self
-    {
-        $this->authorization = new Authorization(
-            ($this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE),
-            $this->merchantId,
-            $this->secretKey
-        );
-
-        return $this;
-    }
 
     /**
-     * Initialize the API with the configuration data from afterpay
-     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
+     * Getter for payment info
+     * @return Payment Object defining the payment details
      */
-    public function getConfig()
+    public function getPaymentInfo(): Payment
     {
-        // Collect the configuration data //
-        if ($this->isServerAvailable) {
-            $this->configurationInfo = AfterpayApi::configuration($this->authorization)->get();
-        } else {
-            $json = file_get_contents(__DIR__ . '/../expectations/configuration_details.json');
-
-            $this->configurationInfo = SerializerFactory::getSerializer()->deserialize(
-                (string) $json,
-                sprintf('array<%s>', Configuration::class),
-                'json'
-            );
-        }
+        return $this->paymentInfo;
     }
+
+
+
 
     /**
      * Can the payment be processed (in range of the max and min price)
@@ -194,20 +259,32 @@ class MerchantApi
      */
     public function canProcessPayment(float $price): bool
     {
-        foreach ($this->configurationInfo as $config) {
-            if ($config->getType() === 'PAY_BY_INSTALLMENT') {
-                $maximumAllowed = $config->getMaximumAmount()->getAmount();
-                $minimumAllowed = $config->getMinimumAmount()->getAmount();
+        if($this->minPrice && $this->maxPrice) {
+            $minPrice = $this->minPrice;
+            $maxPrice = $this->maxPrice;
+        } else {
+            $this->retrieveConfig();
+            foreach ($this->configurationInfo as $config) {
+                switch ($config->getType()) {
+                    case 'PAY_BY_INSTALLMENT':
+                        $minPrice = $config->getMaximumAmount()->getAmount();
+                        $maxPrice = $config->getMinimumAmount()->getAmount();
+                        // code...
+                        break;
+
+                    default:
+                        // code...
+                        break;
+                }
+            }
+        }
+        if($minPrice && $maxPrice) {
+            if ($price >= $minPrice && $price <= $maxPrice) {
+                return true;
             }
         }
 
-        if ($price > $maximumAllowed) {
-            return false;
-        }
-        if ($price < $minimumAllowed) {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     /**
@@ -215,12 +292,79 @@ class MerchantApi
      * @param  float $price Price of the product
      * @return float        (Price / 4) or 0 if fail
      */
-    public function getPaymentInstallations(float $price): float
+    public function getAmountPerPayment(float $price): float
     {
         if ($this->canProcessPayment($price)) {
-            return $price / 4;
+            $numberOfPayments = $this->getNumberOfPayments();
+            if($numberOfPayments) {
+                return $price / $numberOfPayments;
+            }
         }
-        return 0.00;
+
+        return $price;
+    }
+
+
+
+
+    ############################
+    # do-ers
+    ############################
+
+    /**
+     * Initialize the authorization field with the set merchant id and secret key
+     */
+    public function logIn(bool $loginAgain = false): self
+    {
+        if($this->authorization === null || $loginAgain) {
+            $this->authorization = new Authorization(
+                ($this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE),
+                $this->Config()->get('merchant_id'),
+                $this->Config()->get('secret_key')
+            );
+            print_r($this->authorization);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Initialize the API with the configuration data from afterpay
+     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
+     */
+    public function retrieveConfig(bool $getConfigAgain = false)
+    {
+        if($this->configurationInfo === null || $getConfigAgain) {
+            $this->configurationInfo = 'no-config-found';
+
+            //look for local config details (FASTER)
+            $locationForConfigFile = $this->getLocationForConfigFile();
+            if($locationForConfigFile) {
+                $json = file_get_contents($locationForConfigFile);
+                if($json) {
+                    $this->configurationInfo = SerializerFactory::getSerializer()
+                        ->deserialize(
+                            (string) $json,
+                            sprintf('array<%s>', Configuration::class),
+                            'json'
+                        );
+                }
+            }
+
+            //retrieve from server ...
+            if($this->configurationInfo === 'no-config-found') {
+                $this->logIn();
+                // Collect the configuration data //
+                if ($this->isServerAvailable) {
+                    $this->configurationInfo = AfterpayApi::configuration($this->authorization)->get();
+                }
+            }
+            if($this->configurationInfo === 'no-config-found') {
+                $this->configurationInfo = new Configuration();
+            }
+        }
+
+        return $this->configurationInfo;
     }
 
     /**

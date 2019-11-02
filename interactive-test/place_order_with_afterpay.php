@@ -46,8 +46,8 @@
     Your HTML here
     <script>
     window.onload = function() {
-        AfterPay.initialize({countryCode: "NZ"});
-        AfterPay.redirect({token: "123456"});
+        Afterpay.initialize({countryCode: "NZ"});
+        Afterpay.redirect({token: "123456"});
     };
     </script>
 

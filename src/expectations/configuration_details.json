@@ -7,7 +7,7 @@
       "currency": "NZD"
     },
     "maximumAmount": {
-      "amount": "999.00",
+      "amount": "9999.00",
       "currency": "NZD"
     }
   },
@@ -19,7 +19,7 @@
       "currency": "NZD"
     },
     "maximumAmount": {
-      "amount": "999.00",
+      "amount": "9999.00",
       "currency": "NZD"
     }
   }
