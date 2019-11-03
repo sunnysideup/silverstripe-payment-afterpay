@@ -146,6 +146,7 @@ class MerchantApi extends Object
 
 
 
+
     ############################
     # setters
     ############################
@@ -197,15 +198,13 @@ class MerchantApi extends Object
 
 
 
+
+
+
     ############################
     # getters
     ############################
 
-
-    public function getNumberOfPayments() : int
-    {
-        return $this->Config()->get('number_of_payments');
-    }
 
 
     /**
@@ -274,6 +273,11 @@ class MerchantApi extends Object
         return false;
     }
 
+    public function getNumberOfPayments() : int
+    {
+        return $this->Config()->get('number_of_payments');
+    }
+
     /**
      * Get the payment installations for afterpay (return 0 if price is out of range)
      * @param  float $price Price of the product
@@ -336,8 +340,13 @@ class MerchantApi extends Object
     }
 
 
+
+
+
+
+
     ############################
-    # do-ers
+    # internal do-ers
     ############################
 
     /**
@@ -390,6 +399,11 @@ class MerchantApi extends Object
 
         return $this->configurationInfo;
     }
+
+
+
+
+
 
 
     ########################################
