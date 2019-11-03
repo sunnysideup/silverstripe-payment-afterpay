@@ -40,10 +40,11 @@ class MerchantApi extends Object
     private static $number_of_payments = 4;
 
     /**
-     * see: afterpay/src/expectations/configuration_details.json as an example
+     * see: afterpay/expectations as an example
      * @var string
      */
-    private static $location_for_configuration_file = '';
+
+    private static $expectations_folder = 'vendor/sunnysideup/expectations';
 
 
     ############################
@@ -134,6 +135,7 @@ class MerchantApi extends Object
             self::$singleton_cache = new self('singleton');
         }
         self::$singleton_cache->setIsTest(Director::isLive() ? false : true);
+        self::$singleton_cache->logIn();
 
         return self::$singleton_cache;
     }
@@ -205,21 +207,6 @@ class MerchantApi extends Object
         return $this->Config()->get('number_of_payments');
     }
 
-    public function getLocationForConfigFile() : string
-    {
-        $relativeFileName = $this->Config()->get('location_for_configuration_file');
-        if($relativeFileName) {
-            $absoluteFileName = Director::baseFolder() . '/' . $relativeFileName;
-            if(file_exists($absoluteFileName)) {
-
-                return $absoluteFileName;
-            } else {
-                user_error('bad location_for_configuration_file specified: '.$absoluteFileName);
-            }
-        }
-
-        return '';
-    }
 
     /**
      * Getter for is test
@@ -305,68 +292,6 @@ class MerchantApi extends Object
     }
 
 
-
-
-    ############################
-    # do-ers
-    ############################
-
-    /**
-     * Initialize the authorization field with the set merchant id and secret key
-     */
-    public function logIn(bool $loginAgain = false): self
-    {
-        if($this->authorization === null || $loginAgain) {
-            $this->authorization = new Authorization(
-                ($this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE),
-                $this->Config()->get('merchant_id'),
-                $this->Config()->get('secret_key')
-            );
-            print_r($this->authorization);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Initialize the API with the configuration data from afterpay
-     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
-     */
-    public function retrieveConfig(bool $getConfigAgain = false)
-    {
-        if($this->configurationInfo === null || $getConfigAgain) {
-            $this->configurationInfo = 'no-config-found';
-
-            //look for local config details (FASTER)
-            $locationForConfigFile = $this->getLocationForConfigFile();
-            if($locationForConfigFile) {
-                $json = file_get_contents($locationForConfigFile);
-                if($json) {
-                    $this->configurationInfo = SerializerFactory::getSerializer()
-                        ->deserialize(
-                            (string) $json,
-                            sprintf('array<%s>', Configuration::class),
-                            'json'
-                        );
-                }
-            }
-
-            //retrieve from server ...
-            if($this->configurationInfo === 'no-config-found') {
-                $this->logIn();
-                // Collect the configuration data //
-                if ($this->isServerAvailable) {
-                    $this->configurationInfo = AfterpayApi::configuration($this->authorization)->get();
-                }
-            }
-            if($this->configurationInfo === 'no-config-found') {
-                $this->configurationInfo = new Configuration();
-            }
-        }
-
-        return $this->configurationInfo;
-    }
-
     /**
      * Pass an OrderDetails object to this function and collect the OrderToken from afterpay
      * if succesful. This order helps afterpay assess the preapproval
@@ -382,12 +307,7 @@ class MerchantApi extends Object
         if ($this->isServerAvailable) {
             $this->orderToken = AfterpayApi::orders($this->authorization)->create($order);
         } else {
-            $json = file_get_contents(__DIR__ . '/../expectations/order_create_response.json');
-            $this->orderToken = SerializerFactory::getSerializer()->deserialize(
-                (string) $json,
-                OrderToken::class,
-                'json'
-            );
+            $this->orderToken = localExpecationFileToClass('order_create_response.json', OrderToken::class);
         }
     }
 
@@ -408,12 +328,106 @@ class MerchantApi extends Object
                 user_error('No order token found, please create an order before processing a payment');
             }
         } else {
-            $json = file_get_contents(__DIR__ . '/../expectations/payments_get_response.json');
-            $this->paymentInfo = SerializerFactory::getSerializer()->deserialize(
-                (string) $json,
-                Payment::class,
-                'json'
+            $this->paymentInfo = $this->localExpecationFileToClass(
+                'payments_get_response.json',
+                Payment::class
             );
         }
+    }
+
+
+    ############################
+    # do-ers
+    ############################
+
+    /**
+     * Initialize the authorization field with the set merchant id and secret key
+     */
+    protected function ping(bool $pingAgain = false): self
+    {
+        if($this->isServerAvailable === null || $pingAgain) {
+            $this->isServerAvailable = true;
+        }
+
+        return $this->isServerAvailable;
+    }
+    /**
+     * Initialize the authorization field with the set merchant id and secret key
+     */
+    protected function logIn(bool $loginAgain = false): self
+    {
+        if($this->authorization === null || $loginAgain) {
+            $this->authorization = new Authorization(
+                ($this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE),
+                $this->Config()->get('merchant_id'),
+                $this->Config()->get('secret_key')
+            );
+        }
+
+        return $this->authorization;
+    }
+
+    /**
+     * Initialize the API with the configuration data from afterpay
+     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
+     */
+    protected function retrieveConfig(bool $getConfigAgain = false)
+    {
+        if($this->configurationInfo === null || $getConfigAgain) {
+            if($this->findExpectationFile('configuration_details.json')) {
+                //look for local config details (FASTER)
+                $this->configurationInfo = $this->localExpecationFileToClass(
+                    'configuration_details.json',
+                    sprintf('array<%s>', Configuration::class)
+                );
+            } else {
+                // Collect the configuration data //
+                if ($this->isServerAvailable) {
+                    $this->configurationInfo = AfterpayApi::configuration($this->authorization)->get();
+                }
+            }
+        }
+
+        return $this->configurationInfo;
+    }
+
+
+    ########################################
+    # helpers
+    ########################################
+
+
+    protected function findExpectationFile(string $fileName) : string
+    {
+        if($relativeFileName) {
+            $folder = $this->Config()->get('expectations_folder');
+            $absoluteFileName = Director::baseFolder() . '/' . $folder . '/' . $relativeFileName;
+            if(file_exists($absoluteFileName)) {
+
+                return $absoluteFileName;
+            } else {
+                user_error('bad file specified: '.$absoluteFileName);
+            }
+        }
+
+        return '';
+    }
+
+    protected function localExpecationFileToClass($fileName, $className)
+    {
+        $absoluteFileName = $this->findExpectationFile($fileName);
+        if($absoluteFileName) {
+            $json = file_get_contents($absoluteFileName);
+            if($json) {
+                return SerializerFactory::getSerializer()->deserialize(
+                    (string) $json,
+                    $className,
+                    'json'
+                );
+            }
+        }
+        user_error('Could not create expectation file.');
+
+        return new $className();
     }
 }
