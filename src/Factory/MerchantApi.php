@@ -313,6 +313,8 @@ class MerchantApi extends Object
         } else {
             $this->orderToken = localExpecationFileToClass('order_create_response.json', OrderToken::class);
         }
+
+        return $this->orderToken;
     }
 
     /**
