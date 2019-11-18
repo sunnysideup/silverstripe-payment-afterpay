@@ -75,7 +75,7 @@ class MerchantApi extends Object
      *
      * @var bool
      */
-    private $isServerAvailable = null;
+    private $isServerAvailable = true;
 
 
 
@@ -206,6 +206,14 @@ class MerchantApi extends Object
     ############################
 
 
+<<<<<<< HEAD
+=======
+    public function getNumberOfPayments() : int
+    {
+        return $this->Config()->get('number_of_payments');
+    }
+
+>>>>>>> 2fca858f00d2ae075e92c31c64ab85571333ecaa
 
     /**
      * Getter for is test
@@ -338,11 +346,14 @@ class MerchantApi extends Object
             );
         }
     }
+<<<<<<< HEAD
 
 
 
 
 
+=======
+>>>>>>> 2fca858f00d2ae075e92c31c64ab85571333ecaa
 
 
     ############################
@@ -363,7 +374,7 @@ class MerchantApi extends Object
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
-    protected function logIn(bool $loginAgain = false): Authorization
+    protected function logIn(bool $loginAgain = false): self
     {
         if($this->authorization === null || $loginAgain) {
             $this->authorization = new Authorization(
@@ -401,11 +412,14 @@ class MerchantApi extends Object
     }
 
 
+<<<<<<< HEAD
 
 
 
 
 
+=======
+>>>>>>> 2fca858f00d2ae075e92c31c64ab85571333ecaa
     ########################################
     # helpers
     ########################################
