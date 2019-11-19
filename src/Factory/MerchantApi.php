@@ -311,7 +311,7 @@ class MerchantApi extends Object
         if ($this->isServerAvailable) {
             $this->orderToken = AfterpayApi::orders($this->authorization)->create($order);
         } else {
-            $this->orderToken = localExpecationFileToClass('order_create_response.json', OrderToken::class);
+            $this->orderToken = $this->localExpecationFileToClass('order_create_response.json', OrderToken::class);
         }
 
         return $this->orderToken;
