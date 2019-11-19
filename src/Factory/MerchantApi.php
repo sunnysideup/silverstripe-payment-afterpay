@@ -363,7 +363,7 @@ class MerchantApi extends Object
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
-    protected function logIn(bool $loginAgain = false): self
+    protected function logIn(bool $loginAgain = false): Authorization
     {
         if($this->authorization === null || $loginAgain) {
             $this->authorization = new Authorization(
