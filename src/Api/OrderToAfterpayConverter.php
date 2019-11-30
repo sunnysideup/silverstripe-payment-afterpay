@@ -29,6 +29,7 @@ class OrderToAfterpayConverter extends OrderConverter
         $consumer->setGivenNames($this->billingAddress->FirstName);
         $consumer->setSurname($this->billingAddress->Surname);
         $consumer->setPhoneNumber($this->billingAddress->Phone);
+        //add to order details
         $orderDetails->setConsumer($consumer);
 
         // who is billing //
@@ -39,6 +40,7 @@ class OrderToAfterpayConverter extends OrderConverter
         $billingAddressContact->setPostcode($this->billingAddress->PostalCode);
         $billingAddressContact->setCountryCode($this->billingAddress->Country);
         $billingAddressContact->setPhoneNumber($this->billingAddress->Phone);
+        //add to order details
         $orderDetails->setBilling($billingAddressContact);
 
         // who it is being shipped to //
@@ -49,32 +51,26 @@ class OrderToAfterpayConverter extends OrderConverter
         $shippingAddressContact->setPostcode($this->shippingAddress->PostalCode);
         $shippingAddressContact->setCountryCode($this->shippingAddress->Country);
         $shippingAddressContact->setPhoneNumber($this->shippingAddress->Phone);
+        //add to order details
         $orderDetails->setShipping($shippingAddressContact);
 
 
         // where to bring the user on payment fail or success (test info) //
         $merchantOptions = new MerchantOptions();
-        $merchantOptions->setRedirectConfirmUrl($this->order->Link());
-        $merchantOptions->setRedirectCancelUrl($this->order->Link());
+        $absoluteURLForOrder = AfterpayEcommercePaymentController::create_link($this->order);
+        $merchantOptions->setRedirectConfirmUrl($absoluteURLForOrder);
+        $merchantOptions->setRedirectCancelUrl($absoluteURLForOrder);
+
+        //add to order details
         $orderDetails->setMerchant($merchantOptions);
 
         // Set the total amount for the order //
         $totalAmount = new Money();
-        $totalAmount->setAmount($this->order->Total);
+        $totalAmount->setAmount($this->cleanupCurrencies($this->order->Total));
         $totalAmount->setCurrency($this->currencyCode);
-        $orderDetails->setAmount($totalAmount);
+        //add to order details
+        $orderDetails->setTotalAmount($totalAmount);
 
-        // Set the default amount for shipping //
-        $this->shippingAddressAmount = new Money();
-        $this->shippingAddressAmount->setAmount(0);
-        $this->shippingAddressAmount->setCurrency($this->currencyCode);
-        $this->shippingAddressAmount->setAmount($totalAmount);
-
-        // Set the default amount to be paid in tax //
-        $totalAmount = new Money();
-        $totalAmount->setAmount(0);
-        $totalAmount->setCurrency($this->currencyCode);
-        $orderDetails->setTaxAmount($totalAmount);
 
         // Add the list of purchased items //
         $itemsList = [];
@@ -86,7 +82,7 @@ class OrderToAfterpayConverter extends OrderConverter
             $i->setQuantity($item->Quantity);
 
             $price = new Money();
-            $price->setAmount($item->UnitPriceAsMoney()->Amount);
+            $price->setAmount($this->cleanupCurrencies($item->UnitPriceAsMoney()->Amount));
             // $price->setCurrency($item->UnitPriceAsMoney()->Currency);
             $price->setCurrency($this->currencyCode);
 
@@ -102,17 +98,18 @@ class OrderToAfterpayConverter extends OrderConverter
         $discount->setDisplayName('discount');
 
         $discountAmount = new Money();
-        $discountAmount->setAmount($this->getAmountForModifierType('Discount'));
+        $discountAmount->setAmount($this->cleanupCurrencies($this->getAmountForModifierType('Discount')));
         $discountAmount->setCurrency($this->currencyCode);
-
+        //set amount in Discount
         $discount->setAmount($discountAmount);
-
-        $orderDetails->setDiscount($discount);
+        //set discount in order details
+        $orderDetails->setDiscounts([$discount]);
 
         // Update shipping amount //
         $this->shippingAddress = new Money();
-        $this->shippingAddress->setAmount($orderDetails->getShippingAmount()->getAmount() + $this->getAmountForModifierType('Delivery'));
+        $this->shippingAddress->setAmount($this->cleanupCurrencies($this->getAmountForModifierType('Delivery')));
         $this->shippingAddress->setCurrency($this->currencyCode);
+        //set discount in order details
         $orderDetails->setShippingAmount($this->shippingAddress);
 
         // Courier details (test details) //
@@ -128,11 +125,19 @@ class OrderToAfterpayConverter extends OrderConverter
 
         // Update tax amount //
         $tax = new Money();
-        $tax->setAmount($orderDetails->getTaxAmount()->getAmount() +$this->getAmountForModifierType('Tax'));
+        $tax->setAmount($this->cleanupCurrencies($this->getAmountForModifierType('Tax')));
         $tax->setCurrency($this->currencyCode);
+        //set discount in order details
         $orderDetails->setTaxAmount($tax);
 
         return $orderDetails;
+    }
+
+    protected function cleanupCurrencies($value)
+    {
+        $value = str_replace(',', '', $value);
+
+        return floatval($value);
     }
 
 
