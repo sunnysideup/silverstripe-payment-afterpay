@@ -323,6 +323,17 @@ class MerchantApi extends Object
      */
     public function createPayment(string $merchantReference = '')
     {
+        // $authorization = new \CultureKings\Afterpay\Model\Merchant\Authorization(
+        //     \CultureKings\Afterpay\Model\Merchant\Authorization::SANDBOX_URI,
+        //     YOUR_MERCHANT_ID,
+        //     YOUR_SECRET_KEY
+        // );
+        //
+        // $payment = \CultureKings\Afterpay\Factory\MerchantApi::payments($authorization)->capture(
+        //     ORDER_TOKEN,
+        //     MERCHANT_REFERENCE,
+        //     WEBHOOK_EVENT_URL
+        // );
         // Create the payment, collect the token //
         if ($this->isServerAvailable) {
             if ($this->orderToken !== null) {
