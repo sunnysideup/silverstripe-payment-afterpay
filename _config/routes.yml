@@ -1,0 +1,7 @@
+---
+Name: afterpay_routes
+---
+
+Director:
+  rules:
+    'afterpaypayment//$Action/$ValidateHash/$IDs': 'Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController'
