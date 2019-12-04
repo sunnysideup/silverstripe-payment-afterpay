@@ -15,8 +15,7 @@
         }
     },
     "require-dev": {
-        "phpspec/phpspec": "^5.1",
-        "symplify/easy-coding-standard": "^6.0"
+        "sunnysideup/easy-coding-standards": "dev-master"
     },
     "require": {
         "culturekings/afterpay": "^2.2"
