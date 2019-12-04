@@ -15,6 +15,11 @@
         }
     },
     "require": {
-        "culturekings/afterpay": "^2.2"
+        "culturekings/afterpay": "^2.2",
+        "phpspec/phpspec": "^5.1"
+    },	
+    "scripts": {	
+        "lint": "vendor/bin/ecs check src --fix",	
+        "test": "vendor/bin/phpspec run --format=pretty"	
     }
 }
