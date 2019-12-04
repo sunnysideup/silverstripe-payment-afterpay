@@ -14,14 +14,7 @@
             "Sunnysideup\\Afterpay\\": "src/"
         }
     },
-    "require-dev": {
-        "sunnysideup/easy-coding-standards": "dev-master"
-    },
     "require": {
         "culturekings/afterpay": "^2.2"
-    },
-    "scripts": {
-        "lint": "vendor/bin/ecs check src --fix",
-        "test": "vendor/bin/phpspec run --format=pretty"
     }
 }
