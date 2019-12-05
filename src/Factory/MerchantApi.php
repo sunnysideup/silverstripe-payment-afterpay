@@ -319,9 +319,10 @@ class MerchantApi extends Object
 
     /**
      * Capture the payment after the order has been placed
+     * @param  string $orderTokenAsString
      * @param  string $merchantReference Optional: Update the merchant reference
      */
-    public function createPayment(string $merchantReference = '')
+    public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
         // $authorization = new \CultureKings\Afterpay\Model\Merchant\Authorization(
         //     \CultureKings\Afterpay\Model\Merchant\Authorization::SANDBOX_URI,
@@ -336,9 +337,15 @@ class MerchantApi extends Object
         // );
         // Create the payment, collect the token //
         if ($this->isServerAvailable) {
-            if ($this->orderToken !== null) {
+            if(! $orderTokenAsString) {
+                if ($this->orderToken !== null) {
+                    $orderTokenAsString = $this->orderToken->token;
+                }
+
+            }
+            if($orderTokenAsString) {
                 $this->paymentInfo = AfterpayApi::payments($this->authorization)->capture(
-                    $this->orderToken,
+                    $orderTokenAsString,
                     $merchantReference
                 );
             } else {
@@ -350,6 +357,8 @@ class MerchantApi extends Object
                 Payment::class
             );
         }
+
+        return $this->paymentInfo;
     }
 
 

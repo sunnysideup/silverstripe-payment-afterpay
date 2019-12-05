@@ -5,7 +5,11 @@ namespace Sunnysideup\Afterpay\Control;
 use Controller;
 use Director;
 use Order;
+use EcommerceDBConfig;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
+use Sunnysideup\Afterpay\Factory\MerchantApi;
+
+use CultureKings\Afterpay\Model\Merchant\Payment;
 
 class AfterpayEcommercePaymentController extends Controller
 {
@@ -36,7 +40,14 @@ class AfterpayEcommercePaymentController extends Controller
             )->first();
         if($payment) {
             if($success) {
-                $payment->Status = 'Success';
+                $payment->Status = 'Pending';
+                $api = $this->myAfterpayApi();
+                $response = $api->createPayment($orderToken);
+                $payment->AfterpayConfirmationToken = serialize($reponse);
+                if($response instanceof Payment) {
+                    if($response->getStatus() === 'APPROVED')
+                    $payment->Status = 'Success';
+                }
             } else {
                 $payment->Status = 'Failure';
             }
@@ -64,6 +75,30 @@ class AfterpayEcommercePaymentController extends Controller
     protected function capturePayment()
     {
 
+    }
+
+    protected function myAfterpayApi()
+    {
+        return MerchantApi::inst()
+            ->setMinAndMaxPrice(
+                $this->EcomConfig()->AfterpayMinValue,
+                $this->EcomConfig()->AfterpayMaxValue
+            )
+            ->setIsServerAvailable(true);
+    }
+
+
+    public function hasAfterpay($total) : bool
+    {
+        return $this->myAfterpayApi()->canProcessPayment($total);
+    }
+
+    // /**
+    //  * @return EcommerceDBConfig
+    //  */
+    protected function EcomConfig()
+    {
+        return EcommerceDBConfig::current_ecommerce_db_config();
     }
 
 }

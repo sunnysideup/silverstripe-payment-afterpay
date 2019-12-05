@@ -31,8 +31,8 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     private static $db = array(
         'AfterpayResponse' => 'Text',
-        'AfterpayToken' => 'Varchar(255)',
-        'AfterpayConfirmationToken' => 'Varchar(255)',
+        'AfterpayToken' => 'Text',
+        'AfterpayConfirmationToken' => 'Text',
         'DebugMessage' => 'HTMLText',
     );
 
