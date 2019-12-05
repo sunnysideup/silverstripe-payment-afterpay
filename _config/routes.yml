@@ -1,7 +1,8 @@
 ---
 Name: afterpay_routes
+After: framework/routes#coreroutes
 ---
 
 Director:
   rules:
-    'afterpaypayment//$Action/$ValidateHash/$IDs': 'Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController'
+    'afterpaypayment//$Action/$IDs': 'Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController'

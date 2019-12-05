@@ -1,6 +1,6 @@
 {
     "name": "sunnysideup/afterpay",
-    "type": "silverstripe-vendormodule",
+    "type": "silverstripe-module",
     "description": "Integrate easily with the api.afterpay.com API",
     "license": "BSD-3-Clause",
     "authors": [
@@ -17,9 +17,9 @@
     "require": {
         "culturekings/afterpay": "^2.2",
         "phpspec/phpspec": "^5.1"
-    },	
-    "scripts": {	
-        "lint": "vendor/bin/ecs check src --fix",	
-        "test": "vendor/bin/phpspec run --format=pretty"	
+    },
+    "scripts": {
+        "lint": "vendor/bin/ecs check src --fix",
+        "test": "vendor/bin/phpspec run --format=pretty"
     }
 }

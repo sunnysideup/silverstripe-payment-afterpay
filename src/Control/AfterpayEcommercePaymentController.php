@@ -2,6 +2,10 @@
 
 namespace Sunnysideup\Afterpay\Control;
 
+use Controller;
+use Director;
+use Order;
+use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 
 class AfterpayEcommercePaymentController extends Controller
 {
@@ -12,6 +16,11 @@ class AfterpayEcommercePaymentController extends Controller
     public function index()
     {
         return $this->redirect('/');
+    }
+
+    public function allowedActions($limitToClass = NULL)
+    {
+        return self::$allowed_actions;
     }
 
     public function confirm($request)

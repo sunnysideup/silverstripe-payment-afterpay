@@ -423,8 +423,12 @@ class MerchantApi extends Object
     # helpers
     ########################################
 
-
-    protected function findExpectationFile(string $fileName) : string
+    /**
+     *
+     * @param  string $relativeFileName
+     * @return string
+     */
+    protected function findExpectationFile(string $relativeFileName) : string
     {
         if($relativeFileName) {
             $folder = $this->Config()->get('expectations_folder');

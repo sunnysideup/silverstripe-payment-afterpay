@@ -4,6 +4,20 @@ namespace Sunnysideup\Afterpay\Model;
 
 
 use Sunnysideup\Afterpay\Factory\MerchantApi;
+use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
+
+use ReadonlyField;
+use FieldList;
+use LiteralField;
+use SiteTree;
+use Requirements;
+use EcommercePayment;
+use EcommercePayment_Result;
+use EcommercePayment_Processing;
+use EcommercePayment_Failure;
+use EcommerceDBConfig;
+use OrderForm;
+use ContentController;
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz
@@ -18,6 +32,7 @@ class AfterpayEcommercePayment extends EcommercePayment
     private static $db = array(
         'AfterpayResponse' => 'Text',
         'AfterpayToken' => 'Varchar(255)',
+        'AfterpayConfirmationToken' => 'Varchar(255)',
         'DebugMessage' => 'HTMLText',
     );
 
