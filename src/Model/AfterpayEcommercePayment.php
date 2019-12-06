@@ -36,10 +36,6 @@ class AfterpayEcommercePayment extends EcommercePayment
         'DebugMessage' => 'HTMLText',
     );
 
-    private static $indexes = [
-        'AfterpayToken' => true,
-    ];
-
     private static $table_name = 'AfterpayEcommercePayment';
 
     private static $logo = '/themes/base/images/AP-RGB-sm.svg';
