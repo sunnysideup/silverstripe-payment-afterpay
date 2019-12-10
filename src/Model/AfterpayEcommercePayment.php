@@ -63,12 +63,15 @@ class AfterpayEcommercePayment extends EcommercePayment
     public function getPaymentFormFields()
     {
         $logo = '<img src="'.$this->Config()->logo.'" alt="Credit card payments powered by Afterpay" style="height: 100px;"/>';
-        $privacyLink = '<a href="' . $this->config()->get("privacy_link"). '" target="_blank" title="Read Afterpay\'s privacy policy">' . $logo . '</a><br/>';
         $api = $this->myAfterpayApi();
-        $afterpayDetails = $api->getNumberOfPayments().' payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.';
+        $html = '
+            <p>
+                <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Afterpay</a>
+                provides '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.
+            </p>
+            ' . $logo;
         $fields = new FieldList([
-            new LiteralField('AfterpayDetails', '<p style="text-align: center">'.$afterpayDetails.'</p>'),
-            new LiteralField('AfterpayLogo', $privacyLink),
+            new LiteralField('AfterpayDetails', $html),
         ]);
 
         return $fields;
