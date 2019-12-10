@@ -16,6 +16,8 @@ use CultureKings\Afterpay\Model\Merchant\Payment;
 
 use Object;
 use Director;
+use ShoppingCart;
+use DBField;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -276,6 +278,24 @@ class MerchantApi extends Object
     public function getNumberOfPayments() : int
     {
         return $this->Config()->get('number_of_payments');
+    }
+
+    /**
+     * @param Order - optional
+     *
+     * @return DBCurrency
+     */
+    public function getAmountPerPaymentForCurrentOrder(?Order $order = null)
+    {
+        if(! $order) {
+            $order = ShoppingCart::current_order();
+        }
+        $totalAmount = 0;
+        if($order) {
+            $totalAmount = $order->Total();
+        }
+
+        return DBField::create_field('Currency',  $totalAmount / 4);
     }
 
     /**

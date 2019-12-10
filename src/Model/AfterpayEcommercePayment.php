@@ -18,6 +18,7 @@ use EcommercePayment_Failure;
 use EcommerceDBConfig;
 use OrderForm;
 use ContentController;
+use ShoppingCart;
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz
@@ -47,7 +48,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     // DPS Information
 
-    private static $privacy_link = 'https://www.afterpay.com/en-NZ/privacy-policy';
+    private static $privacy_link = 'https://www.afterpay.com/terms';
 
     public function getCMSFields()
     {
@@ -63,9 +64,11 @@ class AfterpayEcommercePayment extends EcommercePayment
     {
         $logo = '<img src="'.$this->Config()->logo.'" alt="Credit card payments powered by Afterpay" style="height: 100px;"/>';
         $privacyLink = '<a href="' . $this->config()->get("privacy_link"). '" target="_blank" title="Read Afterpay\'s privacy policy">' . $logo . '</a><br/>';
+        $api = $this->myAfterpayApi();
+        $afterpayDetails = $api->getNumberOfPayments().' payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.';
         $fields = new FieldList([
-            new LiteralField('DPSInfo', $privacyLink)
-            // new LiteralField('DPSPaymentsList', $paymentsList)
+            new LiteralField('AfterpayDetails', '<p style="text-align: center">'.$afterpayDetails.'</p>'),
+            new LiteralField('AfterpayLogo', $privacyLink),
         ]);
 
         return $fields;
