@@ -9,7 +9,7 @@ If product can be paid for with afterpay (based on the maximum and minimum amoun
 
 ## 3. When the user has to choose a payment option
 
-Check if the final price is between the minimum and maximum ranges for AfterPay (provided in step 1)
+Check if the final price is between the minimum and maximum ranges for Afterpay (provided in step 1)
 - if the price is in the range then allow afterpay as a payment option
 
 ## 4. When the checkout afterpay option is clicked in payment
