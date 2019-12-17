@@ -1,24 +1,27 @@
 <?php
 
 namespace spec\Sunnysideup\Afterpay\Factory;
-
-// Models //
+/**
+ *
+ * test class only!
+ * @var
+ */
 use \CultureKings\Afterpay\Model\Merchant\Consumer;
 use \CultureKings\Afterpay\Model\Merchant\MerchantOptions;
 use \CultureKings\Afterpay\Model\Money;
 use \CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use \CultureKings\Afterpay\Model\Merchant\Payment;
 
-use Sunnysideup\Afterpay\Factory\MerchantApi;
+use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class MerchantApiSpec extends ObjectBehavior
+class SilverstripeMerchantApiSpec extends ObjectBehavior
 {
 
     function it_will_initialize()
     {
-        MerchantApi::inst()
+        SilverstripeMerchantApi::inst()
             ->setIsTest(true)
             ->setMerchantId("")
             ->setSecretKey("")
@@ -28,13 +31,13 @@ class MerchantApiSpec extends ObjectBehavior
 
     function it_will_get_config()
     {
-        MerchantApi::inst()
+        SilverstripeMerchantApi::inst()
             ->getConfig();
     }
 
     function it_will_check_payment() {
 
-        $v = MerchantApi::inst()
+        $v = SilverstripeMerchantApi::inst()
             ->getPaymentInstallations(999.00);
 
         echo("Returns: $v \n");
@@ -62,13 +65,13 @@ class MerchantApiSpec extends ObjectBehavior
         $orderDetails->setMerchant($merchantOptions);
         $orderDetails->setTotalAmount($totalAmount);
 
-        MerchantApi::inst()
+        SilverstripeMerchantApi::inst()
             ->createOrder($orderDetails);
 
     }
 
     function it_should_create_a_payment() {
-        MerchantApi::inst()
+        SilverstripeMerchantApi::inst()
             ->createPayment();
     }
 

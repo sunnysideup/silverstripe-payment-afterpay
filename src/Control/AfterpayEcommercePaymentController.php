@@ -7,7 +7,7 @@ use Director;
 use Order;
 use EcommerceDBConfig;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
-use Sunnysideup\Afterpay\Factory\MerchantApi;
+use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 
 use CultureKings\Afterpay\Model\Merchant\Payment;
 
@@ -80,7 +80,7 @@ class AfterpayEcommercePaymentController extends Controller
 
     protected function myAfterpayApi()
     {
-        return MerchantApi::inst()
+        return SilverstripeMerchantApi::inst()
             ->setMinAndMaxPrice(
                 $this->EcomConfig()->AfterpayMinValue,
                 $this->EcomConfig()->AfterpayMaxValue

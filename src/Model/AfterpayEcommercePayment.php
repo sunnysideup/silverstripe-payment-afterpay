@@ -3,7 +3,7 @@
 namespace Sunnysideup\Afterpay\Model;
 
 
-use Sunnysideup\Afterpay\Factory\MerchantApi;
+use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
 
 use ReadonlyField;
@@ -66,10 +66,11 @@ class AfterpayEcommercePayment extends EcommercePayment
         $api = $this->myAfterpayApi();
         $html = '
             <p>
-                <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Afterpay</a>
+                Afterpay
                 provides '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.
-            </p>
-            ' . $logo;
+                ' . $logo .'
+                <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Learn More</a>
+            </p>';
         $fields = new FieldList([
             new LiteralField('AfterpayDetails', $html),
         ]);
@@ -153,7 +154,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     protected function myAfterpayApi()
     {
-        return MerchantApi::inst()
+        return SilverstripeMerchantApi::inst()
             ->setMinAndMaxPrice(
                 $this->EcomConfig()->AfterpayMinValue,
                 $this->EcomConfig()->AfterpayMaxValue
