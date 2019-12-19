@@ -306,8 +306,18 @@ class SilverstripeMerchantApi extends ViewableData
         if($order) {
             $totalAmount = $order->Total();
         }
+        //make cents into dollars
+        $amountPerPayment = $totalAmount * 100;
+        //divide by four
+        $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
 
-        return DBField::create_field('Currency',  $totalAmount / 4);
+        //round up anything beyond cents
+        $amountPerPayment = ceil($amountPerPayment);
+
+        //bring back to cents
+        $amountPerPayment = $amountPerPayment / 100;
+
+        return DBField::create_field('Currency',  $amountPerPayment );
     }
 
     /**

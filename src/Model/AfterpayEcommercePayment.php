@@ -62,7 +62,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     public function getPaymentFormFields()
     {
-        $logo = '<img src="'.$this->Config()->logo.'" alt="Credit card payments powered by Afterpay" style="height: 100px;"/>';
+        $logo = '<img src="'.$this->Config()->logo.'" alt="Payments powered by Afterpay" />';
         $api = $this->myAfterpayApi();
         $html = '
             <p>
