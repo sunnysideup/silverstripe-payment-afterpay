@@ -40,7 +40,7 @@ class AfterpayEcommercePaymentController extends Controller
             )->first();
         if($payment) {
             if($success) {
-                $payment->Status = 'Pending';
+                $payment->Status = 'Failure';
                 $api = $this->myAfterpayApi();
                 $response = $api->createPayment($orderToken);
                 $payment->AfterpayConfirmationToken = serialize($response);
@@ -89,7 +89,7 @@ class AfterpayEcommercePaymentController extends Controller
     }
 
 
-    public function hasAfterpay($total) : bool
+    public function ShowAfterpay($total) : bool
     {
         return $this->myAfterpayApi()->canProcessPayment($total);
     }

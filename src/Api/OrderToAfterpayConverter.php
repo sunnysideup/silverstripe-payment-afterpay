@@ -37,23 +37,59 @@ class OrderToAfterpayConverter extends OrderConverter
 
         // who is billing //
         $billingAddressContact = new Contact();
-        $billingAddressContact->setName($this->billingAddress->FirstName.' '.$this->billingAddress->Surname);
-        $billingAddressContact->setLine1($this->billingAddress->Address.' '.$this->billingAddress->Address2);
-        $billingAddressContact->setState($this->billingAddress->City);
-        $billingAddressContact->setPostcode($this->billingAddress->PostalCode);
-        $billingAddressContact->setCountryCode($this->billingAddress->Country);
-        $billingAddressContact->setPhoneNumber($this->billingAddress->Phone);
+        $billingName = $this->implodeAndTrim(
+            [
+                $this->billingAddress->FirstName,
+                $this->billingAddress->Surname,
+            ]
+        );
+        if (! $billingName) {
+            $billingName = 'not set';
+        }
+        $billingLine1 = $this->implodeAndTrim(
+            [
+                $this->billingAddress->Address,
+                $this->billingAddress->Address2,
+            ]
+        );
+        if(! $billingLine1) {
+            $billingLine1 = 'not set';
+        }
+        $billingAddressContact->setName($billingName);
+        $billingAddressContact->setLine1($billingLine1);
+        $billingAddressContact->setState($this->billingAddress->City ?? 'not set');
+        $billingAddressContact->setPostcode($this->billingAddress->PostalCode ?? 'not set');
+        $billingAddressContact->setCountryCode($this->billingAddress->Country ?? 'not set');
+        $billingAddressContact->setPhoneNumber($this->billingAddress->Phone ?? 'not set');
         //add to order details
         $orderDetails->setBilling($billingAddressContact);
 
         // who it is being shipped to //
         $shippingAddressContact = new Contact();
-        $shippingAddressContact->setName($this->shippingAddress->FirstName.' '.$this->shippingAddress->Surname);
-        $shippingAddressContact->setLine1($this->shippingAddress->Address.' '.$this->shippingAddress->Address2);
-        $shippingAddressContact->setState($this->shippingAddress->City);
-        $shippingAddressContact->setPostcode($this->shippingAddress->PostalCode);
-        $shippingAddressContact->setCountryCode($this->shippingAddress->Country);
-        $shippingAddressContact->setPhoneNumber($this->shippingAddress->Phone);
+        $shippingName = $this->implodeAndTrim(
+            [
+                $this->shippingAddress->FirstName,
+                $this->shippingAddress->Surname,
+            ]
+        );
+        if(! $shippingName) {
+            $shippingName = 'not set';
+        }
+        $shippingLine1 =  $this->implodeAndTrim(
+            [
+                $this->shippingAddress->Address,
+                $this->shippingAddress->Address2
+            ]
+        );
+        if(! $shippingLine1) {
+            $shippingLine1 = 'not set';
+        }
+        $shippingAddressContact->setName($shippingName);
+        $shippingAddressContact->setLine1($shippingLine1);
+        $shippingAddressContact->setState($this->shippingAddress->City ?? 'not set');
+        $shippingAddressContact->setPostcode($this->shippingAddress->PostalCode ?? 'not set');
+        $shippingAddressContact->setCountryCode($this->shippingAddress->Country ?? 'not set');
+        $shippingAddressContact->setPhoneNumber($this->shippingAddress->Phone ?? 'not set');
         //add to order details
         $orderDetails->setShipping($shippingAddressContact);
 
@@ -109,11 +145,11 @@ class OrderToAfterpayConverter extends OrderConverter
         $orderDetails->setDiscounts([$discount]);
 
         // Update shipping amount //
-        $this->shippingAddress = new Money();
-        $this->shippingAddress->setAmount($this->cleanupCurrencies($this->getAmountForModifierType('Delivery')));
-        $this->shippingAddress->setCurrency($this->currencyCode);
+        $shippingCost = new Money();
+        $shippingCost->setAmount($this->cleanupCurrencies($this->getAmountForModifierType('Delivery')));
+        $shippingCost->setCurrency($this->currencyCode);
         //set discount in order details
-        $orderDetails->setShippingAmount($this->shippingAddress);
+        $orderDetails->setShippingAmount($shippingCost);
 
         // Courier details (test details) //
         if($this->hasCourier()) {
@@ -121,9 +157,9 @@ class OrderToAfterpayConverter extends OrderConverter
             $tomorrowTS = strtotime('tomorrow');
             $dateTime = new DateTime(Date('Y-m-d', $tomorrowTS));
             $courier->setShippedAt($dateTime);
-            $courier->setName("CourierPost");
-            $courier->setTracking("AA999999999AA");
-            $courier->setPriority("STANDARD");
+            $courier->setName("tba");
+            $courier->setTracking("tba");
+            $courier->setPriority("tba");
         }
 
         // Update tax amount //
