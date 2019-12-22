@@ -47,7 +47,7 @@ class AfterpayEcommercePaymentController extends Controller
                 if($response instanceof Payment) {
                     if($response->getStatus() === 'APPROVED') {
                         $payment->Status = 'Success';
-                    } 
+                    }
                 }
             } else {
                 $payment->Status = 'Failure';
@@ -89,7 +89,7 @@ class AfterpayEcommercePaymentController extends Controller
     }
 
 
-    public function hasAfterpay($total) : bool
+    public function ShowAfterpay($total) : bool
     {
         return $this->myAfterpayApi()->canProcessPayment($total);
     }
