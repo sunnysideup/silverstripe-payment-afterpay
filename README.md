@@ -27,7 +27,7 @@ Name: Afterpay
 ---
 
 Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi:
-  merchant_name: 'Photowarehouse'
+  merchant_name: 'my merchant name'
   merchant_id: yyy
   secret_key: 'xxx'
   expectations_folder: 'mysite/afterpay/configurations'
@@ -62,11 +62,10 @@ class MyProduct extends Product
 
     protected $ShowAfterpayOption = true;
 
-    public function showAfterpay() : bool
+    public function ShowAfterpay() : bool
     {
-        return $this->ShowAfterpayOption() ? true : false;
+        return return $this->myAfterpayApi()->canProcessPayment($this->CalculatedPrice());
     }
-
 
     protected function myAfterpayApi() : SilverstripeMerchantApi
     {
@@ -76,12 +75,6 @@ class MyProduct extends Product
                 (float) $this->AfterpayMaxValue
             )
             ->setIsServerAvailable($this->ShowAfterpayOption);
-    }
-
-
-    public function hasAfterpay() : bool
-    {
-        return $this->myAfterpayApi()->canProcessPayment($this->CalculatedPrice());
     }
 
     public function getAfterpayNumberOfPayments() : int
@@ -95,32 +88,24 @@ class MyProduct extends Product
         return $this->getAfterpayNumberOfPayments() * 2;
     }
 
-
     public function getAfterpayAmountPerPayment() :float
     {
         return $this->myAfterpayApi()
             ->getAmountPerPayment($this->CalculatedPrice());
     }
 
-    public function getAfterpayAmountPerPaymentAsMoney()
+    public function getAfterpayAmountPerPaymentAsMoney() : DBMoney
     {
         return EcommerceCurrency::get_money_object_from_order_currency(
             $this->getAfterpayAmountPerPayment()
         );
     }
-    public function getAfterpayAmountPerPaymentAsCurrency()
+    
+    public function getAfterpayAmountPerPaymentAsCurrency(): DBCurrency
     {
         return DBField::create_field('Currency', $this->getAfterpayAmountPerPayment());
     }
 
-
-    /**
-     * Should the after pay option appear for a product
-     */
-    public function ShowAfterpayOption() : bool
-    {
-        return $this->hasAfterpay();
-    }
 
 }
 
