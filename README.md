@@ -101,7 +101,7 @@ class MyProduct extends Product
         );
     }
     
-    public function getAfterpayAmountPerPaymentAsCurrency(): : DBCurrency
+    public function getAfterpayAmountPerPaymentAsCurrency(): DBCurrency
     {
         return DBField::create_field('Currency', $this->getAfterpayAmountPerPayment());
     }
