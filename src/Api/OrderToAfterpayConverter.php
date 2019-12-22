@@ -37,11 +37,21 @@ class OrderToAfterpayConverter extends OrderConverter
 
         // who is billing //
         $billingAddressContact = new Contact();
-        $billingName = $this->billingAddress->FirstName.' '.$this->billingAddress->Surname;
-        if(! $billingName) {
+        $billingName = $this->implodeAndTrim(
+            [
+                $this->billingAddress->FirstName,
+                $this->billingAddress->Surname,
+            ]
+        );
+        if (! $billingName) {
             $billingName = 'not set';
         }
-        $billingLine1 = $this->billingAddress->Address.' '.$this->billingAddress->Address2;
+        $billingLine1 = $this->implodeAndTrim(
+            [
+                $this->billingAddress->Address,
+                $this->billingAddress->Address2,
+            ]
+        );
         if(! $billingLine1) {
             $billingLine1 = 'not set';
         }
@@ -56,11 +66,21 @@ class OrderToAfterpayConverter extends OrderConverter
 
         // who it is being shipped to //
         $shippingAddressContact = new Contact();
-        $shippingName = $this->shippingAddress->FirstName.' '.$this->shippingAddress->Surname;
+        $shippingName = $this->implodeAndTrim(
+            [
+                $this->shippingAddress->FirstName,
+                $this->shippingAddress->Surname,
+            ]
+        );
         if(! $shippingName) {
             $shippingName = 'not set';
         }
-        $shippingLine1 = $this->shippingAddress->Address.' '.$this->shippingAddress->Address2;
+        $shippingLine1 =  $this->implodeAndTrim(
+            [
+                $this->shippingAddress->Address,
+                $this->shippingAddress->Address2
+            ]
+        );
         if(! $shippingLine1) {
             $shippingLine1 = 'not set';
         }
