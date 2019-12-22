@@ -7,6 +7,10 @@
         {
             "name": "tristan",
             "email": "tristan@sunnysideup.co.nz"
+        },
+        {
+            "name": "nicolaas",
+            "email": "github@sunnysideup.co.nz"
         }
     ],
     "autoload": {
@@ -15,11 +19,6 @@
         }
     },
     "require": {
-        "culturekings/afterpay": "^2.2",
-        "phpspec/phpspec": "^5.1"
-    },
-    "scripts": {
-        "lint": "vendor/bin/ecs check src --fix",
-        "test": "vendor/bin/phpspec run --format=pretty"
+        "culturekings/afterpay": "^2.2"
     }
 }

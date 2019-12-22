@@ -12,6 +12,8 @@ use CultureKings\Afterpay\Model\Merchant\Configuration;
 use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
 use CultureKings\Afterpay\Model\Merchant\Payment;
+use CultureKings\Afterpay\Exception\ApiException;
+use CultureKings\Afterpay\Service\Merchant\Payments;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -21,6 +23,7 @@ use ViewableData;
 use Director;
 use ShoppingCart;
 use DBField;
+use Order;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -84,7 +87,7 @@ class SilverstripeMerchantApi extends ViewableData
      *
      * @var bool
      */
-    private $isServerAvailable = null;
+    private $isServerAvailable = false;
 
 
 
@@ -93,28 +96,28 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
 
 
-    private $authorization = null;
+    protected $authorization = null;
 
-    private $client = null;
+    protected $client = null;
 
 
     /**
      * Configuration information
      * @var Configuration[]
      */
-    private $configurationInfo = null;
+    protected $configurationInfo = null;
 
     /**
      * Order Token
      * @var OrderToken
      */
-    private $orderToken = null;
+    protected $orderToken = null;
 
     /**
      * Payment information
      * @var Payment
      */
-    private $paymentInfo = null;
+    protected $paymentInfo = null;
 
 
 
@@ -145,7 +148,7 @@ class SilverstripeMerchantApi extends ViewableData
         if (self::$singleton_cache === null) {
             self::$singleton_cache = new self('singleton');
         }
-        self::$singleton_cache->setIsTest(Director::isLive() ? false : true);
+        self::$singleton_cache->isTest = (Director::isLive() ? false : true);
         self::$singleton_cache->setupAuthorization();
         self::$singleton_cache->setupGuzzleClient();
 
@@ -162,18 +165,6 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # setters
     ############################
-
-    /**
-     * Setter for is test
-     * @param  bool $isTest Should the client be using the live api?
-     * @return self         Daisy chain
-     */
-    public function setIsTest(bool $isTest): self
-    {
-        $this->isTest = $isTest;
-
-        return $this;
-    }
 
     /**
      * Setter for is server available
@@ -218,16 +209,6 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
 
 
-
-    /**
-     * Getter for is test
-     * @return bool Are we using the live or sandbox API
-     */
-    public function getIsTest(): bool
-    {
-        return $this->isTest;
-    }
-
     /**
      * Getter for is server available
      * @return bool Are any servers available? Otherwise use cache
@@ -258,29 +239,13 @@ class SilverstripeMerchantApi extends ViewableData
     public function canProcessPayment(float $price): bool
     {
         if($this->getIsServerAvailable()) {
-            if($this->minPrice && $this->maxPrice) {
-                $minPrice = $this->minPrice;
-                $maxPrice = $this->maxPrice;
-            } else {
-                $this->retrieveConfig();
-                foreach ($this->configurationInfo as $config) {
-                    switch ($config->getType()) {
-                        case 'PAY_BY_INSTALLMENT':
-                            $minPrice = $config->getMaximumAmount()->getAmount();
-                            $maxPrice = $config->getMinimumAmount()->getAmount();
-                            // code...
-                            break;
-
-                        default:
-                            // code...
-                            break;
-                    }
-                }
+            if(empty($this->minPrice) || empty($this->maxPrice)) {
+                $this->retrieveMinAndMaxFromConfig();
             }
-            if($minPrice && $maxPrice) {
-                if ($price >= $minPrice && $price <= $maxPrice) {
-                    return true;
-                }
+            if(empty($this->minPrice) || empty($this->maxPrice)) {
+                return false;
+            } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
+                return true;
             }
         }
 
@@ -293,7 +258,7 @@ class SilverstripeMerchantApi extends ViewableData
     }
 
     /**
-     * @param Order - optional
+     * @param Order $order optional
      *
      * @return DBCurrency
      */
@@ -305,17 +270,9 @@ class SilverstripeMerchantApi extends ViewableData
         $totalAmount = 0;
         if($order) {
             $totalAmount = $order->Total();
+
+            $amountPerPayment = $this->getAmountPerPayment($totalAmount);
         }
-        //make cents into dollars
-        $amountPerPayment = $totalAmount * 100;
-        //divide by four
-        $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
-
-        //round up anything beyond cents
-        $amountPerPayment = ceil($amountPerPayment);
-
-        //bring back to cents
-        $amountPerPayment = $amountPerPayment / 100;
 
         return DBField::create_field('Currency',  $amountPerPayment );
     }
@@ -330,7 +287,16 @@ class SilverstripeMerchantApi extends ViewableData
         if ($this->canProcessPayment($price)) {
             $numberOfPayments = $this->getNumberOfPayments();
             if($numberOfPayments) {
-                return $price / $numberOfPayments;
+                //make cents into dollars
+                $amountPerPayment = $price * 100;
+                //divide by four
+                $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
+                //round up anything beyond cents
+                $amountPerPayment = ceil($amountPerPayment);
+                //bring back to cents
+                $amountPerPayment = $amountPerPayment / 100;
+
+                return $amountPerPayment;
             }
         }
 
@@ -344,19 +310,26 @@ class SilverstripeMerchantApi extends ViewableData
      * https://github.com/culturekings/afterpay/blob/master/docs/merchant/api.md#create-order
      * https://docs.afterpay.com/nz-online-api-v1.html#orders
      * @param  OrderDetails $order An object holding all the information for the request
-     * @return OrderToken          The token for the preapproval process
+     * @return OrderToken|ApiException          The token for the preapproval process
      */
     public function createOrder(OrderDetails $order)
     {
 
         // Create the order, collect the token //
         if ($this->isServerAvailable) {
-            $this->orderToken = MerchantApi::orders(
-                $this->authorization,
-                $this->client
-            )->create($order);
+            try {
+                $this->orderToken = MerchantApi::orders(
+                    $this->authorization,
+                    $this->client
+                )->create($order);
+            } catch (ApiException $e) {
+                return $e;
+            }
         } else {
-            $this->orderToken = $this->localExpecationFileToClass('order_create_response.json', OrderToken::class);
+            $this->orderToken = $this->localExpecationFileToClass(
+                'order_create_response.json',
+                OrderToken::class
+            );
         }
 
         return $this->orderToken;
@@ -366,21 +339,11 @@ class SilverstripeMerchantApi extends ViewableData
      * Capture the payment after the order has been placed
      * @param  string $orderTokenAsString
      * @param  string $merchantReference Optional: Update the merchant reference
+     *
+     * @return PaymentsService|ApiException
      */
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
-        // $authorization = new \CultureKings\Afterpay\Model\Merchant\Authorization(
-        //     \CultureKings\Afterpay\Model\Merchant\Authorization::SANDBOX_URI,
-        //     YOUR_MERCHANT_ID,
-        //     YOUR_SECRET_KEY
-        // );
-        //
-        // $payment = MerchantApi::payments($authorization)->capture(
-        //     ORDER_TOKEN,
-        //     MERCHANT_REFERENCE,
-        //     WEBHOOK_EVENT_URL
-        // );
-        // Create the payment, collect the token //
         if ($this->isServerAvailable) {
             if(! $orderTokenAsString) {
                 if ($this->orderToken !== null) {
@@ -389,13 +352,17 @@ class SilverstripeMerchantApi extends ViewableData
 
             }
             if($orderTokenAsString) {
-                $this->paymentInfo = MerchantApi::payments(
-                    $this->authorization,
-                    $this->client
-                )->capture(
-                    $orderTokenAsString,
-                    $merchantReference
-                );
+                try {
+                    $this->paymentInfo = MerchantApi::payments(
+                        $this->authorization,
+                        $this->client
+                    )->capture(
+                        $orderTokenAsString,
+                        $merchantReference
+                    );
+                } catch (ApiException $e) {
+                    return $e;
+                }
             } else {
                 user_error('No order token found, please create an order before processing a payment');
             }
@@ -422,10 +389,11 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
-    protected function ping_end_point(bool $pingAgain = false): self
+    protected function ping_end_point(bool $pingAgain = false): bool
     {
         if($this->isServerAvailable === null || $pingAgain) {
-            $this->isServerAvailable = MerchantApi::ping($this->getConnectionURL(), $this->client);
+            $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
+            $this->isServerAvailable = $answer ? true : false;
         }
 
         return $this->isServerAvailable;
@@ -467,12 +435,16 @@ class SilverstripeMerchantApi extends ViewableData
 
     protected function getUserAgentString() : string
     {
-        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.$this->Config()->get('merchant_name').'/ '.$this->Config()->get('merchant_id').' ) '.Director::baseURL();
+        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.
+            $this->Config()->get('merchant_name').'/ '.
+            $this->Config()->get('merchant_id').' ) '.
+            Director::baseURL();
     }
 
     /**
      * Initialize the API with the configuration data from afterpay
      * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
+     * @return Configuration|null
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
@@ -486,16 +458,42 @@ class SilverstripeMerchantApi extends ViewableData
             } else {
                 // Collect the configuration data //
                 if ($this->isServerAvailable) {
-                    $this->configurationInfo = MerchantApi::configuration(
-                        $this->authorization,
-                        $this->client
-                    )->get();
+                    try {
+                        $this->configurationInfo = MerchantApi::configuration(
+                            $this->authorization,
+                            $this->client
+                        )->get();
+                    } catch (ApiException $e) {
+                        return null;
+                    }
                 }
             }
         }
 
         return $this->configurationInfo;
     }
+
+
+    protected function retrieveMinAndMaxFromConfig()
+    {
+        $this->retrieveConfig();
+        if($this->configurationInfo) {
+            foreach ($this->configurationInfo as $config) {
+                switch ($config->getType()) {
+                    case 'PAY_BY_INSTALLMENT':
+                        $this->minPrice = $config->getMaximumAmount()->getAmount();
+                        $this->maxPrice = $config->getMinimumAmount()->getAmount();
+                        // code...
+                        break;
+
+                    default:
+                        // code...
+                        break;
+                }
+            }
+        }
+    }
+
 
     protected function getConnectionURL() : string
     {

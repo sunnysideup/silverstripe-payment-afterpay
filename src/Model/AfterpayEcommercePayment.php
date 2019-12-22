@@ -19,6 +19,7 @@ use EcommerceDBConfig;
 use OrderForm;
 use ContentController;
 use ShoppingCart;
+use CultureKings\Afterpay\Model\Merchant\OrderToken;
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz
@@ -140,11 +141,13 @@ class AfterpayEcommercePayment extends EcommercePayment
 
             $api = $this->myAfterpayApi();
             $tokenObject = $api->createOrder($data);
-
-            $tokenString = $tokenObject->getToken();
-
             $this->AfterpayResponse = serialize($tokenObject);
-            $this->AfterpayToken = $tokenString;
+            if($tokenObject instanceof OrderToken) {
+                $tokenString = $tokenObject->getToken();
+                $this->AfterpayToken = $tokenString;
+            } else {
+                $this->AfterpayToken = '';
+            }
 
             $this->write();
         }

@@ -40,14 +40,14 @@ class AfterpayEcommercePaymentController extends Controller
             )->first();
         if($payment) {
             if($success) {
-                $payment->Status = 'Pending';
+                $payment->Status = 'Failure';
                 $api = $this->myAfterpayApi();
                 $response = $api->createPayment($orderToken);
                 $payment->AfterpayConfirmationToken = serialize($response);
                 if($response instanceof Payment) {
                     if($response->getStatus() === 'APPROVED') {
                         $payment->Status = 'Success';
-                    }
+                    } 
                 }
             } else {
                 $payment->Status = 'Failure';
