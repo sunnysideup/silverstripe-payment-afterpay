@@ -46,7 +46,17 @@ EcommercePayment:
     Sunnysideup\Afterpay\Model\AfterpayEcommercePayment: "Afterpay"
 ```
 
-3. add functionality to product:
+3. add fields to EcomConfig (via data extension or otherwise)
+
+```php
+    private static $db = [
+        'ShowAfterpayOption' => 'Boolean',
+        'AfterpayMinValue' => 'Int',
+        'AfterpayMaxValue' => 'Int'
+    ]
+```
+
+4. add functionality to product:
 
 `mysite/src/Model/MyProduct.php`:
 
@@ -56,12 +66,6 @@ use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 
 class MyProduct extends Product
 {
-    protected $AfterpayMinValue = 100;
-
-    protected $AfterpayMaxValue = 100;
-
-    protected $ShowAfterpayOption = true;
-
     public function ShowAfterpay() : bool
     {
         return return $this->myAfterpayApi()->canProcessPayment($this->CalculatedPrice());
@@ -71,10 +75,10 @@ class MyProduct extends Product
     {
         return SilverstripeMerchantApi::inst()
             ->setMinAndMaxPrice(
-                (float) $this->AfterpayMinValue,
-                (float) $this->AfterpayMaxValue
+                (float) $this->EcomConfig()->AfterpayMinValue,
+                (float) $this->EcomConfig()->AfterpayMaxValue
             )
-            ->setIsServerAvailable($this->ShowAfterpayOption);
+            ->setIsServerAvailable($this->EcomConfig()->ShowAfterpayOption);
     }
 
     public function getAfterpayNumberOfPayments() : int
@@ -100,7 +104,7 @@ class MyProduct extends Product
             $this->getAfterpayAmountPerPayment()
         );
     }
-    
+
     public function getAfterpayAmountPerPaymentAsCurrency(): DBCurrency
     {
         return DBField::create_field('Currency', $this->getAfterpayAmountPerPayment());

@@ -340,7 +340,7 @@ class SilverstripeMerchantApi extends ViewableData
      * @param  string $orderTokenAsString
      * @param  string $merchantReference Optional: Update the merchant reference
      *
-     * @return PaymentsService|ApiException
+     * @return Payments|ApiException
      */
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
