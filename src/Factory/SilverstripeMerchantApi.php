@@ -13,6 +13,7 @@ use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
 use CultureKings\Afterpay\Model\Merchant\Payment;
 use CultureKings\Afterpay\Exception\ApiException;
+use CultureKings\Afterpay\Service\Merchant\Payments;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -22,6 +23,7 @@ use ViewableData;
 use Director;
 use ShoppingCart;
 use DBField;
+use Order;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -282,10 +284,10 @@ class SilverstripeMerchantApi extends ViewableData
                     return false;
                 }
             }
-            if($minPrice && $maxPrice) {
-                if ($price >= $minPrice && $price <= $maxPrice) {
-                    return true;
-                }
+            if(empty($minPrice) || empty($maxPrice)) {
+                return false;
+            } elseif ($price >= $minPrice && $price <= $maxPrice) {
+                return true;
             }
         }
 
@@ -298,7 +300,7 @@ class SilverstripeMerchantApi extends ViewableData
     }
 
     /**
-     * @param Order - optional
+     * @param Order $order optional
      *
      * @return DBCurrency
      */
@@ -380,18 +382,6 @@ class SilverstripeMerchantApi extends ViewableData
      */
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
-        // $authorization = new \CultureKings\Afterpay\Model\Merchant\Authorization(
-        //     \CultureKings\Afterpay\Model\Merchant\Authorization::SANDBOX_URI,
-        //     YOUR_MERCHANT_ID,
-        //     YOUR_SECRET_KEY
-        // );
-        //
-        // $payment = MerchantApi::payments($authorization)->capture(
-        //     ORDER_TOKEN,
-        //     MERCHANT_REFERENCE,
-        //     WEBHOOK_EVENT_URL
-        // );
-        // Create the payment, collect the token //
         if ($this->isServerAvailable) {
             if(! $orderTokenAsString) {
                 if ($this->orderToken !== null) {
@@ -437,10 +427,11 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
-    protected function ping_end_point(bool $pingAgain = false): self
+    protected function ping_end_point(bool $pingAgain = false): bool
     {
         if($this->isServerAvailable === null || $pingAgain) {
-            $this->isServerAvailable = MerchantApi::ping($this->getConnectionURL(), $this->client);
+            $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
+            $this->isServerAvailable = $answer ? true : false;
         }
 
         return $this->isServerAvailable;
@@ -482,13 +473,16 @@ class SilverstripeMerchantApi extends ViewableData
 
     protected function getUserAgentString() : string
     {
-        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.$this->Config()->get('merchant_name').'/ '.$this->Config()->get('merchant_id').' ) '.Director::baseURL();
+        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.
+            $this->Config()->get('merchant_name').'/ '.
+            $this->Config()->get('merchant_id').' ) '.
+            Director::baseURL();
     }
 
     /**
      * Initialize the API with the configuration data from afterpay
      * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
-     * @return ConfigurationService|null
+     * @return Configuration|null
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
