@@ -21,5 +21,8 @@
     "require": {
         "sunnysideup/ecommerce": "~10.0",
         "culturekings/afterpay": "^2.2"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+
 }
