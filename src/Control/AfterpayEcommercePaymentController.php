@@ -39,21 +39,24 @@ class AfterpayEcommercePaymentController extends Controller
                 ]
             )->first();
         if($payment) {
+            $payment->Status = 'Failure';
             if($success) {
-                $payment->Status = 'Failure';
-                $api = $this->myAfterpayApi();
-                $response = $api->createPayment($orderToken);
-                if($response instanceof Payment) {
-                    $payment->AfterpayConfirmationToken = serialize($response);
-                    if($response->getStatus() === 'APPROVED') {
-                        $payment->Status = 'Success';
+                $order = Order::get()->byID($orderID);
+                if($order) {
+                    $api = $this->myAfterpayApi();
+                    $response = $api->createPayment($orderToken, $order->ID);
+                    if($response instanceof Payment) {
+                        $payment->AfterpayConfirmationToken = serialize($response);
+                        if($response->getStatus() === 'APPROVED') {
+                            $payment->Status = 'Success';
+                        }
                     }
                 }
             } else {
                 $payment->Status = 'Failure';
             }
             $payment->write();
-            $order = Order::get()->byID($orderID);
+
 
             return $this->redirect($order->Link());
         }

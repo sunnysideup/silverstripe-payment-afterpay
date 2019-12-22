@@ -17,6 +17,7 @@ use Director;
 use ShoppingCart;
 use DBField;
 use Order;
+use Currency;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -152,14 +153,6 @@ class SilverstripeMerchantApi extends ViewableData
     public function getIsServerAvailable(): bool
     {
         return $this->isServerAvailable;
-    }
-    /**
-     * Getter for payment info
-     * @return Payment Object defining the payment details
-     */
-    public function getPaymentInfo(): Payment
-    {
-        return $this->paymentInfo;
     }
 
     /**
