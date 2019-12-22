@@ -9,5 +9,3 @@ To Run all unit tests run `vendor/bin/phpspec run`
 Copying structure of https://github.com/culturekings/afterpay
 
 https://github.com/culturekings/afterpay/blob/master/docs/merchant/api.md
-
-TODO: Add license

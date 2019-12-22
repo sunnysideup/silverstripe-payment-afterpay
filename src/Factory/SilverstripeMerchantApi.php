@@ -87,7 +87,7 @@ class SilverstripeMerchantApi extends ViewableData
      *
      * @var bool
      */
-    private $isServerAvailable = null;
+    private $isServerAvailable = false;
 
 
 
@@ -96,28 +96,28 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
 
 
-    private $authorization = null;
+    protected $authorization = null;
 
-    private $client = null;
+    protected $client = null;
 
 
     /**
      * Configuration information
      * @var Configuration[]
      */
-    private $configurationInfo = null;
+    protected $configurationInfo = null;
 
     /**
      * Order Token
      * @var OrderToken
      */
-    private $orderToken = null;
+    protected $orderToken = null;
 
     /**
      * Payment information
      * @var Payment
      */
-    private $paymentInfo = null;
+    protected $paymentInfo = null;
 
 
 
@@ -148,7 +148,7 @@ class SilverstripeMerchantApi extends ViewableData
         if (self::$singleton_cache === null) {
             self::$singleton_cache = new self('singleton');
         }
-        self::$singleton_cache->setIsTest(Director::isLive() ? false : true);
+        self::$singleton_cache->isTest = (Director::isLive() ? false : true);
         self::$singleton_cache->setupAuthorization();
         self::$singleton_cache->setupGuzzleClient();
 
@@ -165,18 +165,6 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # setters
     ############################
-
-    /**
-     * Setter for is test
-     * @param  bool $isTest Should the client be using the live api?
-     * @return self         Daisy chain
-     */
-    public function setIsTest(bool $isTest): self
-    {
-        $this->isTest = $isTest;
-
-        return $this;
-    }
 
     /**
      * Setter for is server available
@@ -220,16 +208,6 @@ class SilverstripeMerchantApi extends ViewableData
     # getters
     ############################
 
-
-
-    /**
-     * Getter for is test
-     * @return bool Are we using the live or sandbox API
-     */
-    public function getIsTest(): bool
-    {
-        return $this->isTest;
-    }
 
     /**
      * Getter for is server available
@@ -312,17 +290,9 @@ class SilverstripeMerchantApi extends ViewableData
         $totalAmount = 0;
         if($order) {
             $totalAmount = $order->Total();
+
+            $amountPerPayment = $this->getAmountPerPayment($totalAmount);
         }
-        //make cents into dollars
-        $amountPerPayment = $totalAmount * 100;
-        //divide by four
-        $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
-
-        //round up anything beyond cents
-        $amountPerPayment = ceil($amountPerPayment);
-
-        //bring back to cents
-        $amountPerPayment = $amountPerPayment / 100;
 
         return DBField::create_field('Currency',  $amountPerPayment );
     }
@@ -337,7 +307,16 @@ class SilverstripeMerchantApi extends ViewableData
         if ($this->canProcessPayment($price)) {
             $numberOfPayments = $this->getNumberOfPayments();
             if($numberOfPayments) {
-                return $price / $numberOfPayments;
+                //make cents into dollars
+                $amountPerPayment = $price * 100;
+                //divide by four
+                $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
+                //round up anything beyond cents
+                $amountPerPayment = ceil($amountPerPayment);
+                //bring back to cents
+                $amountPerPayment = $amountPerPayment / 100;
+
+                return $amountPerPayment;
             }
         }
 
@@ -367,7 +346,10 @@ class SilverstripeMerchantApi extends ViewableData
                 return $e;
             }
         } else {
-            $this->orderToken = $this->localExpecationFileToClass('order_create_response.json', OrderToken::class);
+            $this->orderToken = $this->localExpecationFileToClass(
+                'order_create_response.json',
+                OrderToken::class
+            );
         }
 
         return $this->orderToken;
