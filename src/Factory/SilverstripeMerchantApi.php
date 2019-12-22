@@ -12,6 +12,7 @@ use CultureKings\Afterpay\Model\Merchant\Configuration;
 use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
 use CultureKings\Afterpay\Model\Merchant\Payment;
+use CultureKings\Afterpay\Exception\ApiException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
@@ -263,18 +264,22 @@ class SilverstripeMerchantApi extends ViewableData
                 $maxPrice = $this->maxPrice;
             } else {
                 $this->retrieveConfig();
-                foreach ($this->configurationInfo as $config) {
-                    switch ($config->getType()) {
-                        case 'PAY_BY_INSTALLMENT':
-                            $minPrice = $config->getMaximumAmount()->getAmount();
-                            $maxPrice = $config->getMinimumAmount()->getAmount();
-                            // code...
-                            break;
+                if($this->configurationInfo) {
+                    foreach ($this->configurationInfo as $config) {
+                        switch ($config->getType()) {
+                            case 'PAY_BY_INSTALLMENT':
+                                $minPrice = $config->getMaximumAmount()->getAmount();
+                                $maxPrice = $config->getMinimumAmount()->getAmount();
+                                // code...
+                                break;
 
-                        default:
-                            // code...
-                            break;
+                            default:
+                                // code...
+                                break;
+                        }
                     }
+                } else {
+                    return false;
                 }
             }
             if($minPrice && $maxPrice) {
@@ -344,17 +349,21 @@ class SilverstripeMerchantApi extends ViewableData
      * https://github.com/culturekings/afterpay/blob/master/docs/merchant/api.md#create-order
      * https://docs.afterpay.com/nz-online-api-v1.html#orders
      * @param  OrderDetails $order An object holding all the information for the request
-     * @return OrderToken          The token for the preapproval process
+     * @return OrderToken|ApiException          The token for the preapproval process
      */
     public function createOrder(OrderDetails $order)
     {
 
         // Create the order, collect the token //
         if ($this->isServerAvailable) {
-            $this->orderToken = MerchantApi::orders(
-                $this->authorization,
-                $this->client
-            )->create($order);
+            try {
+                $this->orderToken = MerchantApi::orders(
+                    $this->authorization,
+                    $this->client
+                )->create($order);
+            } catch (ApiException $e) {
+                return $e;
+            }
         } else {
             $this->orderToken = $this->localExpecationFileToClass('order_create_response.json', OrderToken::class);
         }
@@ -366,6 +375,8 @@ class SilverstripeMerchantApi extends ViewableData
      * Capture the payment after the order has been placed
      * @param  string $orderTokenAsString
      * @param  string $merchantReference Optional: Update the merchant reference
+     *
+     * @return PaymentsService|ApiException
      */
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
@@ -389,13 +400,17 @@ class SilverstripeMerchantApi extends ViewableData
 
             }
             if($orderTokenAsString) {
-                $this->paymentInfo = MerchantApi::payments(
-                    $this->authorization,
-                    $this->client
-                )->capture(
-                    $orderTokenAsString,
-                    $merchantReference
-                );
+                try {
+                    $this->paymentInfo = MerchantApi::payments(
+                        $this->authorization,
+                        $this->client
+                    )->capture(
+                        $orderTokenAsString,
+                        $merchantReference
+                    );
+                } catch (ApiException $e) {
+                    return $e;
+                }
             } else {
                 user_error('No order token found, please create an order before processing a payment');
             }
@@ -473,6 +488,7 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * Initialize the API with the configuration data from afterpay
      * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
+     * @return ConfigurationService|null
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
@@ -486,10 +502,14 @@ class SilverstripeMerchantApi extends ViewableData
             } else {
                 // Collect the configuration data //
                 if ($this->isServerAvailable) {
-                    $this->configurationInfo = MerchantApi::configuration(
-                        $this->authorization,
-                        $this->client
-                    )->get();
+                    try {
+                        $this->configurationInfo = MerchantApi::configuration(
+                            $this->authorization,
+                            $this->client
+                        )->get();
+                    } catch (ApiException $e) {
+                        return null;
+                    }
                 }
             }
         }
