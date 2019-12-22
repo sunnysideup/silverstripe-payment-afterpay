@@ -52,7 +52,7 @@ EcommercePayment:
     private static $db = [
         'ShowAfterpayOption' => 'Boolean',
         'AfterpayMinValue' => 'Int',
-        'AfterpayMaxValue' => 'Int'
+        'AfterpayMaxValue' => 'Int',
     ]
 ```
 
