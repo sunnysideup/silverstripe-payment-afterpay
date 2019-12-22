@@ -109,10 +109,10 @@ class AfterpayEcommercePayment extends EcommercePayment
             $page->Logo = '<img src="' . $this->config()->get("logo") . '" alt="Payments powered by Afterpay"/>';
             $controller = new ContentController($page);
 
-            if($this->myAfterpayApi()->getIsTest()) {
-                $requirement = self::DEV_URL;
-            } else {
+            if(Director::isLive()) {
                 $requirement = self::LIVE_URL;
+            } else {
+                $requirement = self::DEV_URL;
             }
             Requirements::clear();
             Requirements::insertHeadTags('<script type="text/javascript" src="' . $requirement . '"></script>');
