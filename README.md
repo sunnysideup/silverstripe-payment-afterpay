@@ -117,16 +117,9 @@ class MyProduct extends Product
     /**
      * Should the after pay option appear for a product
      */
-    public function ShowAfterpayOption()
+    public function ShowAfterpayOption() : bool
     {
-        if ($this->ShowAfterpayOption) {
-            $calPrice = $this->CalculatedPrice();
-            if($calPrice >= $this->AfterpayMinValue && $calPrice <= $this->AfterpayMaxValue) {
-                return $this->hasAfterpay();
-            }
-        }
-
-        return false;
+        return $this->hasAfterpay();
     }
 
 }
