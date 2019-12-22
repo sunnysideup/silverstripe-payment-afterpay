@@ -239,32 +239,12 @@ class SilverstripeMerchantApi extends ViewableData
     public function canProcessPayment(float $price): bool
     {
         if($this->getIsServerAvailable()) {
-            if($this->minPrice && $this->maxPrice) {
-                $minPrice = $this->minPrice;
-                $maxPrice = $this->maxPrice;
-            } else {
-                $this->retrieveConfig();
-                if($this->configurationInfo) {
-                    foreach ($this->configurationInfo as $config) {
-                        switch ($config->getType()) {
-                            case 'PAY_BY_INSTALLMENT':
-                                $minPrice = $config->getMaximumAmount()->getAmount();
-                                $maxPrice = $config->getMinimumAmount()->getAmount();
-                                // code...
-                                break;
-
-                            default:
-                                // code...
-                                break;
-                        }
-                    }
-                } else {
-                    return false;
-                }
+            if(empty($this->minPrice) || empty($this->maxPrice)) {
+                $this->retrieveMinAndMaxFromConfig();
             }
-            if(empty($minPrice) || empty($maxPrice)) {
+            if(empty($this->minPrice) || empty($this->maxPrice)) {
                 return false;
-            } elseif ($price >= $minPrice && $price <= $maxPrice) {
+            } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
                 return true;
             }
         }
@@ -492,6 +472,28 @@ class SilverstripeMerchantApi extends ViewableData
 
         return $this->configurationInfo;
     }
+
+
+    protected function retrieveMinAndMaxFromConfig()
+    {
+        $this->retrieveConfig();
+        if($this->configurationInfo) {
+            foreach ($this->configurationInfo as $config) {
+                switch ($config->getType()) {
+                    case 'PAY_BY_INSTALLMENT':
+                        $this->minPrice = $config->getMaximumAmount()->getAmount();
+                        $this->maxPrice = $config->getMinimumAmount()->getAmount();
+                        // code...
+                        break;
+
+                    default:
+                        // code...
+                        break;
+                }
+            }
+        }
+    }
+
 
     protected function getConnectionURL() : string
     {
