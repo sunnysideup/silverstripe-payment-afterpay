@@ -267,7 +267,7 @@ class SilverstripeMerchantApi extends ViewableData
         if(! $order) {
             $order = ShoppingCart::current_order();
         }
-        $totalAmount = 0;
+        $amountPerPayment = 0;
         if($order) {
             $totalAmount = $order->Total();
 
