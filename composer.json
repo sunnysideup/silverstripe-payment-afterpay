@@ -19,6 +19,7 @@
         }
     },
     "require": {
+        "sunnysideup/ecommerce": "~10.0",
         "culturekings/afterpay": "^2.2"
     }
 }
