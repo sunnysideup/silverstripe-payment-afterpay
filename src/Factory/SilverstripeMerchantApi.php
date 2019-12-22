@@ -190,7 +190,7 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * @param Order $order optional
      *
-     * @return DBCurrency
+     * @return Currency
      */
     public function getAmountPerPaymentForCurrentOrder(?Order $order = null)
     {

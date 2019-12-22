@@ -98,14 +98,14 @@ class MyProduct extends Product
             ->getAmountPerPayment($this->CalculatedPrice());
     }
 
-    public function getAfterpayAmountPerPaymentAsMoney() : DBMoney
+    public function getAfterpayAmountPerPaymentAsMoney() : Money
     {
         return EcommerceCurrency::get_money_object_from_order_currency(
             $this->getAfterpayAmountPerPayment()
         );
     }
 
-    public function getAfterpayAmountPerPaymentAsCurrency(): DBCurrency
+    public function getAfterpayAmountPerPaymentAsCurrency(): Currency
     {
         return DBField::create_field('Currency', $this->getAfterpayAmountPerPayment());
     }
