@@ -68,7 +68,7 @@ class AfterpayEcommercePayment extends EcommercePayment
         $html = '
             <p>
                 Afterpay
-                provides '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.
+                allows '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.
                 ' . $logo .'
                 <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Learn More</a>
             </p>';
