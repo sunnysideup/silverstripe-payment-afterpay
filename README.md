@@ -27,7 +27,7 @@ Name: Afterpay
 ---
 
 Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi:
-  merchant_name: 'Photowarehouse'
+  merchant_name: 'my merchant name'
   merchant_id: yyy
   secret_key: 'xxx'
   expectations_folder: 'mysite/afterpay/configurations'
