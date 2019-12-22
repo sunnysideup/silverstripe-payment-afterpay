@@ -1,11 +1,7 @@
 <?php
-
 namespace Sunnysideup\Afterpay\Factory;
-
 use CultureKings\Afterpay\Factory\MerchantApi;
-
 use CultureKings\Afterpay\Factory\SerializerFactory;
-
 // Models for Data //
 use CultureKings\Afterpay\Model\Merchant\Authorization;
 use CultureKings\Afterpay\Model\Merchant\Configuration;
@@ -14,11 +10,8 @@ use CultureKings\Afterpay\Model\Merchant\OrderToken;
 use CultureKings\Afterpay\Model\Merchant\Payment;
 use CultureKings\Afterpay\Exception\ApiException;
 use CultureKings\Afterpay\Service\Merchant\Payments;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-
-
 use ViewableData;
 use Director;
 use ShoppingCart;
@@ -27,118 +20,84 @@ use Order;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
- * @author Tristan Mastrodicasa
  */
 class SilverstripeMerchantApi extends ViewableData
 {
-
-
     ############################
     # global settings
     ############################
-
     private const CONNECTION_URL_TEST = 'https://api-sandbox.afterpay.com/v1/';
-
     private const CONNECTION_URL_LIVE = 'https://api.afterpay.com/v1/';
-
     private static $merchant_id = 0;
-
     private static $secret_key = '';
-
     private static $number_of_payments = 4;
-
     private static $merchant_name = '';
 
     /**
      * see: afterpay/expectations as an example
      * @var string
      */
-
     private static $expectations_folder = 'vendor/sunnysideup/expectations';
-
-
-
 
     ############################
     # global instance settings
     ############################
-
     /**
      *
      * @var float
      */
     private $minPrice = 0;
-
-
     /**
      *
      * @var float
      */
     private $maxPrice = 0;
-
-
     /**
      *
      * @var bool
      */
     private $isTest = false;
-
     /**
      *
      * @var bool
      */
     private $isServerAvailable = false;
 
-
-
     ############################
     # internal variables
     ############################
-
-
     protected $authorization = null;
-
     protected $client = null;
-
-
     /**
      * Configuration information
      * @var Configuration[]
      */
     protected $configurationInfo = null;
-
     /**
      * Order Token
      * @var OrderToken
      */
     protected $orderToken = null;
-
     /**
      * Payment information
      * @var Payment
      */
     protected $paymentInfo = null;
 
-
-
-
     ############################
     # instance
     ############################
-
     /**
      * this
      * @var SilverstripeMerchantApi|null
      */
     protected static $singleton_cache = null;
-
-    public function __construct(string $initMethod = 'instance')
+      public function __construct(string $initMethod = 'instance')
     {
         if ($initMethod !== 'singleton') {
             user_error('Please use the inst() static method to create me!');
         }
     }
-
     /**
      * Singleton instance pattern
      * @return self
@@ -151,21 +110,12 @@ class SilverstripeMerchantApi extends ViewableData
         self::$singleton_cache->isTest = (Director::isLive() ? false : true);
         self::$singleton_cache->setupAuthorization();
         self::$singleton_cache->setupGuzzleClient();
-
         return self::$singleton_cache;
     }
-
-
-
-
-
-
-
 
     ############################
     # setters
     ############################
-
     /**
      * Setter for is server available
      * If no server exists then collect fake responses from a cache
@@ -175,13 +125,9 @@ class SilverstripeMerchantApi extends ViewableData
     public function setIsServerAvailable(bool $available): self
     {
         $this->isServerAvailable = $available;
-
         return $this;
     }
-
-
-
-    /**
+      /**
      * set the minimum and maximum price to use Afterpay
      * This can overrule settings from Afterpay server
      * and therefore make it faster ...
@@ -193,22 +139,12 @@ class SilverstripeMerchantApi extends ViewableData
     {
         $this->minPrice = $minPrice;
         $this->maxPrice = $maxPrice;
-
         return $this;
     }
-
-
-
-
-
-
-
 
     ############################
     # getters
     ############################
-
-
     /**
      * Getter for is server available
      * @return bool Are any servers available? Otherwise use cache
@@ -217,8 +153,6 @@ class SilverstripeMerchantApi extends ViewableData
     {
         return $this->isServerAvailable;
     }
-
-
     /**
      * Getter for payment info
      * @return Payment Object defining the payment details
@@ -227,9 +161,6 @@ class SilverstripeMerchantApi extends ViewableData
     {
         return $this->paymentInfo;
     }
-
-
-
 
     /**
      * Can the payment be processed (in range of the max and min price)
@@ -243,12 +174,11 @@ class SilverstripeMerchantApi extends ViewableData
                 $this->retrieveMinAndMaxFromConfig();
             }
             if(empty($this->minPrice) || empty($this->maxPrice)) {
-                return false;
+              return false;
             } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
-                return true;
+              return true;
             }
         }
-
         return false;
     }
 
@@ -270,11 +200,9 @@ class SilverstripeMerchantApi extends ViewableData
         $amountPerPayment = 0;
         if($order) {
             $totalAmount = $order->Total();
-
             $amountPerPayment = $this->getAmountPerPayment($totalAmount);
         }
-
-        return DBField::create_field('Currency',  $amountPerPayment );
+        return DBField::create_field('Currency',  $amountPerPayment);
     }
 
     /**
@@ -295,14 +223,11 @@ class SilverstripeMerchantApi extends ViewableData
                 $amountPerPayment = ceil($amountPerPayment);
                 //bring back to cents
                 $amountPerPayment = $amountPerPayment / 100;
-
                 return $amountPerPayment;
             }
         }
-
         return $price;
     }
-
 
     /**
      * Pass an OrderDetails object to this function and collect the OrderToken from afterpay
@@ -314,8 +239,7 @@ class SilverstripeMerchantApi extends ViewableData
      */
     public function createOrder(OrderDetails $order)
     {
-
-        // Create the order, collect the token //
+          // Create the order, collect the token //
         if ($this->isServerAvailable) {
             try {
                 $this->orderToken = MerchantApi::orders(
@@ -331,7 +255,6 @@ class SilverstripeMerchantApi extends ViewableData
                 OrderToken::class
             );
         }
-
         return $this->orderToken;
     }
 
@@ -349,8 +272,7 @@ class SilverstripeMerchantApi extends ViewableData
                 if ($this->orderToken !== null) {
                     $orderTokenAsString = $this->orderToken->token;
                 }
-
-            }
+              }
             if($orderTokenAsString) {
                 try {
                     $this->paymentInfo = MerchantApi::payments(
@@ -372,20 +294,12 @@ class SilverstripeMerchantApi extends ViewableData
                 Payment::class
             );
         }
-
         return $this->paymentInfo;
     }
-
-
-
-
-
-
 
     ############################
     # internal do-ers
     ############################
-
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
@@ -395,9 +309,9 @@ class SilverstripeMerchantApi extends ViewableData
             $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
             $this->isServerAvailable = $answer ? true : false;
         }
-
         return $this->isServerAvailable;
     }
+
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
@@ -410,7 +324,6 @@ class SilverstripeMerchantApi extends ViewableData
                 $this->Config()->get('secret_key')
             );
         }
-
         return $this->authorization;
     }
 
@@ -428,10 +341,8 @@ class SilverstripeMerchantApi extends ViewableData
                 ]
             );
         }
-
         return $this->client;
     }
-
 
     protected function getUserAgentString() : string
     {
@@ -469,10 +380,8 @@ class SilverstripeMerchantApi extends ViewableData
                 }
             }
         }
-
         return $this->configurationInfo;
     }
-
 
     protected function retrieveMinAndMaxFromConfig()
     {
@@ -485,7 +394,6 @@ class SilverstripeMerchantApi extends ViewableData
                         $this->maxPrice = $config->getMinimumAmount()->getAmount();
                         // code...
                         break;
-
                     default:
                         // code...
                         break;
@@ -494,20 +402,14 @@ class SilverstripeMerchantApi extends ViewableData
         }
     }
 
-
     protected function getConnectionURL() : string
     {
         return $this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE;
     }
 
-
-
-
-
     ########################################
     # helpers
     ########################################
-
     /**
      *
      * @param  string $relativeFileName
@@ -519,13 +421,11 @@ class SilverstripeMerchantApi extends ViewableData
             $folder = $this->Config()->get('expectations_folder');
             $absoluteFileName = Director::baseFolder() . '/' . $folder . '/' . $relativeFileName;
             if(file_exists($absoluteFileName)) {
-
                 return $absoluteFileName;
             } else {
                 user_error('bad file specified: '.$absoluteFileName);
             }
         }
-
         return '';
     }
 
