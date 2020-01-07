@@ -342,7 +342,7 @@ class SilverstripeMerchantApi extends ViewableData
         return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.
             $this->Config()->get('merchant_name').'/ '.
             $this->Config()->get('merchant_id').' ) '.
-            Director::baseURL();
+            Director::absoluteBaseURL() . '/';
     }
 
     /**
