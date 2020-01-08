@@ -160,8 +160,9 @@ class SilverstripeMerchantApi extends ViewableData
      * @param  float $price Price of product
      * @return bool         Can the payment be processed (true / false)
      */
-    public function canProcessPayment(float $price): bool
+    public function canProcessPayment($price): bool
     {
+        $price = floatval($price);
         if($this->getIsServerAvailable()) {
             if(empty($this->minPrice) || empty($this->maxPrice)) {
                 $this->retrieveMinAndMaxFromConfig();
@@ -203,8 +204,9 @@ class SilverstripeMerchantApi extends ViewableData
      * @param  float $price Price of the product
      * @return float        (Price / 4) or 0 if fail
      */
-    public function getAmountPerPayment(float $price): float
+    public function getAmountPerPayment($price): float
     {
+        $price = floatval($price);
         if ($this->canProcessPayment($price)) {
             $numberOfPayments = $this->getNumberOfPayments();
             if($numberOfPayments) {
