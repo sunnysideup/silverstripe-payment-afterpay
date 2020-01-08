@@ -163,14 +163,16 @@ class SilverstripeMerchantApi extends ViewableData
     public function canProcessPayment($price): bool
     {
         $price = floatval($price);
-        if($this->getIsServerAvailable()) {
-            if(empty($this->minPrice) || empty($this->maxPrice)) {
-                $this->retrieveMinAndMaxFromConfig();
-            }
-            if(empty($this->minPrice) || empty($this->maxPrice)) {
-              return false;
-            } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
-              return true;
+        if($price) {
+            if($this->getIsServerAvailable()) {
+                if(empty($this->minPrice) || empty($this->maxPrice)) {
+                    $this->retrieveMinAndMaxFromConfig();
+                }
+                if(empty($this->minPrice) || empty($this->maxPrice)) {
+                    return false;
+                } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
+                    return true;
+                }
             }
         }
         return false;
@@ -218,10 +220,13 @@ class SilverstripeMerchantApi extends ViewableData
                 $amountPerPayment = ceil($amountPerPayment);
                 //bring back to cents
                 $amountPerPayment = $amountPerPayment / 100;
+
                 return $amountPerPayment;
             }
         }
-        return $price;
+        user_error('This amount can not be processed', E_USER_NOTICE);
+
+        return 0;
     }
 
     /**
