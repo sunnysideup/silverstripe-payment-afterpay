@@ -193,7 +193,7 @@ class SilverstripeMerchantApi extends ViewableData
         $amountPerPayment = 0;
         if($order) {
             $totalAmount = $order->Total();
-            $amountPerPayment = $this->getAmountPerPayment($totalAmount);
+            $amountPerPayment = $this->getAmountPerPayment(floatval($totalAmount));
         }
         return DBField::create_field('Currency',  $amountPerPayment);
     }

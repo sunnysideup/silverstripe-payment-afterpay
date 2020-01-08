@@ -92,7 +92,7 @@ class AfterpayEcommercePaymentController extends Controller
     }
 
 
-    public function ShowAfterpay($total) : bool
+    public function ShowAfterpay(float $total) : bool
     {
         return $this->myAfterpayApi()->canProcessPayment($total);
     }
