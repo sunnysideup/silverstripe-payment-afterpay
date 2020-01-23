@@ -55,14 +55,14 @@ class AfterpayEcommercePaymentController extends Controller
                     return $this->redirect($order->Link());
                 }
 
-                return $this->redirect('404-can-not-find-order');
+                return $this->redirect('/404-can-not-find-order');
             } else {
                 $payment->Status = 'Failure';
             }
             $payment->write();
         }
 
-        return $this->redirect('404-can-not-find-payment');
+        return $this->redirect('/404-can-not-find-payment');
 
     }
 
