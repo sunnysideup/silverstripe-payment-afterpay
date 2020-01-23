@@ -196,7 +196,9 @@ class SilverstripeMerchantApi extends ViewableData
         $amountPerPayment = 0;
         if($order) {
             $totalAmount = $order->Total();
-            $amountPerPayment = $this->getAmountPerPayment(floatval($totalAmount));
+            if($totalAmount) {
+                $amountPerPayment = $this->getAmountPerPayment(floatval($totalAmount));
+            }
         }
         return DBField::create_field('Currency',  $amountPerPayment);
     }
@@ -224,7 +226,7 @@ class SilverstripeMerchantApi extends ViewableData
                 return $amountPerPayment;
             }
         }
-        user_error('This amount can not be processed', E_USER_NOTICE);
+        // user_error('This amount can not be processed', E_USER_NOTICE);
 
         return 0;
     }

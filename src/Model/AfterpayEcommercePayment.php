@@ -62,14 +62,18 @@ class AfterpayEcommercePayment extends EcommercePayment
         return $fields;
     }
 
-    public function getPaymentFormFields()
+    public function getPaymentFormFields($order = null)
     {
         $logo = '<img src="'.$this->Config()->logo.'" alt="Payments powered by Afterpay" />';
+        if($this->OrderID) {
+            $order = $this->Order();
+        }
+
         $api = $this->myAfterpayApi();
         $html = '
             <p>
                 Afterpay
-                allows '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder()->Nice().' each.
+                allows '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder($order)->Nice().' each.
                 ' . $logo .'
                 <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Learn More</a>
             </p>';
