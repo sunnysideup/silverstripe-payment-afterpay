@@ -224,7 +224,7 @@ class SilverstripeMerchantApi extends ViewableData
                 return $amountPerPayment;
             }
         }
-        user_error('This amount can not be processed', E_USER_NOTICE);
+        // user_error('This amount can not be processed', E_USER_NOTICE);
 
         return 0;
     }
