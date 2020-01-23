@@ -30,6 +30,7 @@ class AfterpayEcommercePaymentController extends Controller
     public function confirm($request)
     {
         $orderID = intval($request->param('ID'));
+        $order = Order::get()->byID($orderID);
         $orderToken = $request->getVar('orderToken');
         $success = $request->getVar('status') === 'SUCCESS' ? true : false;
         $payment = AfterpayEcommercePayment::get()->filter(
@@ -41,7 +42,7 @@ class AfterpayEcommercePaymentController extends Controller
         if($payment) {
             $payment->Status = 'Failure';
             if($success) {
-                $order = Order::get()->byID($orderID);
+
                 if($order) {
                     $api = $this->myAfterpayApi();
                     $response = $api->createPayment($orderToken, $order->ID);
@@ -51,18 +52,18 @@ class AfterpayEcommercePaymentController extends Controller
                             $payment->Status = 'Success';
                         }
                     }
-
-                    return $this->redirect($order->Link());
                 }
 
-                return $this->redirect('/404-can-not-find-order');
             } else {
                 $payment->Status = 'Failure';
             }
             $payment->write();
         }
+        if($order) {
+            return $this->redirect($order->Link());
+        }
 
-        return $this->redirect('/404-can-not-find-payment');
+        return $this->redirect('/404-can-not-find-order');
 
     }
 
