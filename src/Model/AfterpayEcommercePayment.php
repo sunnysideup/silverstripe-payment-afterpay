@@ -62,12 +62,9 @@ class AfterpayEcommercePayment extends EcommercePayment
         return $fields;
     }
 
-    public function getPaymentFormFields($order = null)
+    public function getPaymentFormFields($amount = 0, $order = null)
     {
         $logo = '<img src="'.$this->Config()->logo.'" alt="Payments powered by Afterpay" />';
-        if($this->OrderID) {
-            $order = $this->Order();
-        }
 
         $api = $this->myAfterpayApi();
         $html = '
