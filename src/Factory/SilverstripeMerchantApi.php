@@ -126,6 +126,18 @@ class SilverstripeMerchantApi extends ViewableData
     public function setIsServerAvailable(bool $available): self
     {
         $this->isServerAvailable = $available;
+        if ($available) {
+            $tests = [
+                'merchant_id',
+                'secret_key',
+            ];
+            foreach ($tests as $name) {
+                if (empty($this->Config()->get($name))) {
+                    user_error($name . ' not set for afterpay - but is required to show afterpay');
+                }
+            }
+        }
+
         return $this;
     }
       /**
@@ -163,12 +175,12 @@ class SilverstripeMerchantApi extends ViewableData
     public function canProcessPayment($price): bool
     {
         $price = floatval($price);
-        if($price) {
-            if($this->getIsServerAvailable()) {
-                if(empty($this->minPrice) || empty($this->maxPrice)) {
+        if ($price) {
+            if ($this->getIsServerAvailable()) {
+                if (empty($this->minPrice) || empty($this->maxPrice)) {
                     $this->retrieveMinAndMaxFromConfig();
                 }
-                if(empty($this->minPrice) || empty($this->maxPrice)) {
+                if (empty($this->minPrice) || empty($this->maxPrice)) {
                     return false;
                 } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
                     return true;
