@@ -19,7 +19,7 @@
         }
     },
     "require": {
-        "sunnysideup/ecommerce": "dev-master",
+        "sunnysideup/ecommerce": "*",
         "culturekings/afterpay": "^2.2"
     },
     "minimum-stability": "dev",
