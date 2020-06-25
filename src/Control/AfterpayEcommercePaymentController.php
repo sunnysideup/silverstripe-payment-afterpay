@@ -1,16 +1,5 @@
 <?php
 
-namespace Sunnysideup\Afterpay\Control;
-
-use Controller;
-use Director;
-use Order;
-use EcommerceDBConfig;
-use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
-use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
-
-use CultureKings\Afterpay\Model\Merchant\Payment;
-
 class AfterpayEcommercePaymentController extends Controller
 {
     private static $allowed_actions = [
@@ -108,3 +97,4 @@ class AfterpayEcommercePaymentController extends Controller
     }
 
 }
+
