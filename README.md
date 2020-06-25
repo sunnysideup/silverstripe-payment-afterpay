@@ -18,7 +18,7 @@ Add the following code as outlined below:
 
 1. set up credentials
 
-`mysite/_config/afterpay.yml`:
+`app/_config/afterpay.yml`:
 
 ```yml
 
@@ -30,13 +30,13 @@ Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi:
   merchant_name: 'my merchant name'
   merchant_id: yyy
   secret_key: 'xxx'
-  expectations_folder: 'mysite/afterpay/configurations'
+  expectations_folder: 'app/afterpay/configurations'
   number_of_payments: 4
 ```
 
 2. set afterpay as a payment option
 
-`mysite/_config/ecommerce.yml`:
+`app/_config/ecommerce.yml`:
 
 ```yml
 
@@ -58,7 +58,7 @@ EcommercePayment:
 
 4. add functionality to product:
 
-`mysite/src/Model/MyProduct.php`:
+`app/src/Model/MyProduct.php`:
 
 
 ```php
