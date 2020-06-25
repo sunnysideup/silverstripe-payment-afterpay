@@ -1,5 +1,20 @@
 <?php
 
+namespace Sunnysideup\Afterpay\Api;
+
+use OrderConverter;
+use OrderDetails;
+use Consumer;
+use Contact;
+use MerchantOptions;
+use AfterpayEcommercePaymentController;
+use Money;
+use Item;
+use Discount;
+use ShippingCourier;
+use DateTime;
+
+
 class OrderToAfterpayConverter extends OrderConverter
 {
 
