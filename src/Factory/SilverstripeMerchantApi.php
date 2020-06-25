@@ -17,10 +17,10 @@ use GuzzleHttp\ClientInterface;
 
 
 
-use Currency;
 use SilverStripe\Control\Director;
 use Sunnysideup\Ecommerce\Api\ShoppingCart;
 use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBCurrency;
 use SilverStripe\View\ViewableData;
 
 
@@ -203,7 +203,7 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * @param Order $order optional
      *
-     * @return Currency
+     * @return DBCurrency
      */
     public function getAmountPerPaymentForCurrentOrder(?Order $order = null)
     {
