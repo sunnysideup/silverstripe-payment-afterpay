@@ -1,6 +1,6 @@
 {
     "name": "sunnysideup/afterpay",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "description": "Integrate easily with the api.afterpay.com API",
     "license": "BSD-3-Clause",
     "authors": [
@@ -20,7 +20,8 @@
     },
     "require": {
         "sunnysideup/ecommerce": "*",
-        "culturekings/afterpay": "^2.2"
+        "culturekings/afterpay": "^2.2",
+        "silverstripe/recipe-cms": "^4.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true

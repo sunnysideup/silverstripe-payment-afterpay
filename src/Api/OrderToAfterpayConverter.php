@@ -2,17 +2,21 @@
 
 namespace Sunnysideup\Afterpay\Api;
 
+
+use CultureKings\Afterpay\Model\Merchant\OrderDetails ;
 use CultureKings\Afterpay\Model\Merchant\Consumer;
-use CultureKings\Afterpay\Model\Merchant\MerchantOptions;
-use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\Contact;
-use CultureKings\Afterpay\Model\Merchant\ShippingCourier;
-use CultureKings\Afterpay\Model\Merchant\Discount;
-use CultureKings\Afterpay\Model\Item;
+use CultureKings\Afterpay\Model\Merchant\MerchantOptions;
+
 use CultureKings\Afterpay\Model\Money;
-use OrderConverter;
-use Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController;
+use CultureKings\Afterpay\Model\Item;
+use CultureKings\Afterpay\Model\Merchant\Discount;
+use CultureKings\Afterpay\Model\Merchant\ShippingCourier;
 use DateTime;
+use Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController;
+use Sunnysideup\Ecommerce\Api\OrderConverter;
+
+
 
 class OrderToAfterpayConverter extends OrderConverter
 {

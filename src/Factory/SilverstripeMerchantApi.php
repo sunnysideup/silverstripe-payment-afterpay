@@ -12,12 +12,17 @@ use CultureKings\Afterpay\Exception\ApiException;
 use CultureKings\Afterpay\Service\Merchant\Payments;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use ViewableData;
-use Director;
-use ShoppingCart;
-use DBField;
-use Order;
-use Currency;
+
+
+
+
+
+use SilverStripe\Control\Director;
+use Sunnysideup\Ecommerce\Api\ShoppingCart;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\View\ViewableData;
+
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -198,7 +203,7 @@ class SilverstripeMerchantApi extends ViewableData
     /**
      * @param Order $order optional
      *
-     * @return Currency
+     * @return DBCurrency
      */
     public function getAmountPerPaymentForCurrentOrder(?Order $order = null)
     {
@@ -443,14 +448,41 @@ class SilverstripeMerchantApi extends ViewableData
         return '';
     }
 
+
+/**
+  * ### @@@@ START REPLACEMENT @@@@ ###
+  * WHY: automated upgrade
+  * OLD: $className (case sensitive)
+  * NEW: $className (COMPLEX)
+  * EXP: Check if the class name can still be used as such
+  * ### @@@@ STOP REPLACEMENT @@@@ ###
+  */
     protected function localExpecationFileToClass($fileName, $className)
     {
         $absoluteFileName = $this->findExpectationFile($fileName);
         if($absoluteFileName) {
+
+/**
+  * ### @@@@ START REPLACEMENT @@@@ ###
+  * WHY: automated upgrade
+  * OLD: file_get_contents (case sensitive)
+  * NEW: file_get_contents (COMPLEX)
+  * EXP: Use new asset abstraction (https://docs.silverstripe.org/en/4/changelogs/4.0.0#asset-storage
+  * ### @@@@ STOP REPLACEMENT @@@@ ###
+  */
             $json = file_get_contents($absoluteFileName);
             if($json) {
                 return SerializerFactory::getSerializer()->deserialize(
                     (string) $json,
+
+/**
+  * ### @@@@ START REPLACEMENT @@@@ ###
+  * WHY: automated upgrade
+  * OLD: $className (case sensitive)
+  * NEW: $className (COMPLEX)
+  * EXP: Check if the class name can still be used as such
+  * ### @@@@ STOP REPLACEMENT @@@@ ###
+  */
                     $className,
                     'json'
                 );
@@ -458,6 +490,15 @@ class SilverstripeMerchantApi extends ViewableData
         }
         user_error('Could not create expectation file.');
 
+
+/**
+  * ### @@@@ START REPLACEMENT @@@@ ###
+  * WHY: automated upgrade
+  * OLD: $className (case sensitive)
+  * NEW: $className (COMPLEX)
+  * EXP: Check if the class name can still be used as such
+  * ### @@@@ STOP REPLACEMENT @@@@ ###
+  */
         return new $className();
     }
 }

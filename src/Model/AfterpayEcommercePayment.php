@@ -6,21 +6,31 @@ namespace Sunnysideup\Afterpay\Model;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
 
-use ReadonlyField;
-use FieldList;
-use LiteralField;
-use SiteTree;
-use Requirements;
-use EcommercePayment;
-use EcommercePayment_Result;
-use EcommercePayment_Processing;
-use EcommercePayment_Failure;
-use EcommerceDBConfig;
-use OrderForm;
-use ContentController;
-use ShoppingCart;
-use Director;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\CMS\Controllers\ContentController;
+use SilverStripe\Control\Director;
+use SilverStripe\View\Requirements;
+use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
+use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
+
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz

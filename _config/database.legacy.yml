@@ -1,0 +1,4 @@
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    AfterpayEcommercePaymentController: Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController
+    OrderToAfterpayConverter: Sunnysideup\Afterpay\Api\OrderToAfterpayConverter

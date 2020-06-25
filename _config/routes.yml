@@ -3,6 +3,6 @@ Name: afterpay_routes
 After: framework/routes#coreroutes
 ---
 
-Director:
+SilverStripe\Control\Director:
   rules:
     'afterpaypayment//$Action/$IDs': 'Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController'

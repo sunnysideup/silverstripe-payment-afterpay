@@ -2,14 +2,19 @@
 
 namespace Sunnysideup\Afterpay\Control;
 
-use Controller;
-use Director;
-use Order;
-use EcommerceDBConfig;
+
+
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
+use CultureKings\Afterpay\Model\Merchant\Payment;
+
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 
-use CultureKings\Afterpay\Model\Merchant\Payment;
+use Sunnysideup\Ecommerce\Model\Order;
+use SilverStripe\Control\Director;
+use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
+use SilverStripe\Control\Controller;
+
+
 
 class AfterpayEcommercePaymentController extends Controller
 {
