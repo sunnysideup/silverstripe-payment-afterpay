@@ -12,12 +12,17 @@ use CultureKings\Afterpay\Exception\ApiException;
 use CultureKings\Afterpay\Service\Merchant\Payments;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use ViewableData;
-use Director;
-use ShoppingCart;
-use DBField;
-use Order;
+
+
+
+
+
 use Currency;
+use SilverStripe\Control\Director;
+use Sunnysideup\Ecommerce\Api\ShoppingCart;
+use SilverStripe\ORM\FieldType\DBField;
+use SilverStripe\View\ViewableData;
+
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
