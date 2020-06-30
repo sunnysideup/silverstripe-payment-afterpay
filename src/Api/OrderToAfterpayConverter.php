@@ -2,28 +2,21 @@
 
 namespace Sunnysideup\Afterpay\Api;
 
-
-use CultureKings\Afterpay\Model\Merchant\OrderDetails ;
+use CultureKings\Afterpay\Model\Item;
 use CultureKings\Afterpay\Model\Merchant\Consumer;
 use CultureKings\Afterpay\Model\Merchant\Contact;
-use CultureKings\Afterpay\Model\Merchant\MerchantOptions;
-
-use CultureKings\Afterpay\Model\Money;
-use CultureKings\Afterpay\Model\Item;
 use CultureKings\Afterpay\Model\Merchant\Discount;
+
+use CultureKings\Afterpay\Model\Merchant\MerchantOptions;
+use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\ShippingCourier;
+use CultureKings\Afterpay\Model\Money;
 use DateTime;
 use Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController;
 use Sunnysideup\Ecommerce\Api\OrderConverter;
 
-
-
 class OrderToAfterpayConverter extends OrderConverter
 {
-
-
-
-
     public function convert()
     {
         $orderDetails = new OrderDetails();
@@ -56,7 +49,7 @@ class OrderToAfterpayConverter extends OrderConverter
                 $this->billingAddress->Address2,
             ]
         );
-        if(! $billingLine1) {
+        if (! $billingLine1) {
             $billingLine1 = 'not set';
         }
         $billingAddressContact->setName($billingName);
@@ -76,16 +69,16 @@ class OrderToAfterpayConverter extends OrderConverter
                 $this->shippingAddress->Surname,
             ]
         );
-        if(! $shippingName) {
+        if (! $shippingName) {
             $shippingName = 'not set';
         }
-        $shippingLine1 =  $this->implodeAndTrim(
+        $shippingLine1 = $this->implodeAndTrim(
             [
                 $this->shippingAddress->Address,
-                $this->shippingAddress->Address2
+                $this->shippingAddress->Address2,
             ]
         );
-        if(! $shippingLine1) {
+        if (! $shippingLine1) {
             $shippingLine1 = 'not set';
         }
         $shippingAddressContact->setName($shippingName);
@@ -96,7 +89,6 @@ class OrderToAfterpayConverter extends OrderConverter
         $shippingAddressContact->setPhoneNumber($this->shippingAddress->Phone ?? 'not set');
         //add to order details
         $orderDetails->setShipping($shippingAddressContact);
-
 
         // where to bring the user on payment fail or success (test info) //
         $merchantOptions = new MerchantOptions();
@@ -114,11 +106,10 @@ class OrderToAfterpayConverter extends OrderConverter
         //add to order details
         $orderDetails->setTotalAmount($totalAmount);
 
-
         // Add the list of purchased items //
         $itemsList = [];
 
-        foreach($this->orderItems as $item) {
+        foreach ($this->orderItems as $item) {
             $i = new Item();
             $i->setName($item->getTitle());
             $i->setSKU($item->getInternalItemID());
@@ -156,14 +147,14 @@ class OrderToAfterpayConverter extends OrderConverter
         $orderDetails->setShippingAmount($shippingCost);
 
         // Courier details (test details) //
-        if($this->hasCourier()) {
+        if ($this->hasCourier()) {
             $courier = new ShippingCourier();
             $tomorrowTS = strtotime('tomorrow');
             $dateTime = new DateTime(Date('Y-m-d', $tomorrowTS));
             $courier->setShippedAt($dateTime);
-            $courier->setName("tba");
-            $courier->setTracking("tba");
-            $courier->setPriority("tba");
+            $courier->setName('tba');
+            $courier->setTracking('tba');
+            $courier->setPriority('tba');
         }
 
         // Update tax amount //
@@ -176,17 +167,15 @@ class OrderToAfterpayConverter extends OrderConverter
         return $orderDetails;
     }
 
+    public function hasCourier()
+    {
+        return false;
+    }
+
     protected function cleanupCurrencies($value)
     {
         $value = str_replace(',', '', $value);
 
         return floatval($value);
     }
-
-
-    public function hasCourier()
-    {
-        return false;
-    }
-
 }

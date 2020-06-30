@@ -2,24 +2,20 @@
 
 namespace Sunnysideup\Afterpay\Control;
 
-
-
-use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use CultureKings\Afterpay\Model\Merchant\Payment;
-
-use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
-
-use Sunnysideup\Ecommerce\Model\Order;
-use SilverStripe\Control\Director;
-use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
 use SilverStripe\Control\Controller;
 
+use SilverStripe\Control\Director;
 
+use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
+use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
+use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
+use Sunnysideup\Ecommerce\Model\Order;
 
 class AfterpayEcommercePaymentController extends Controller
 {
     private static $allowed_actions = [
-        'confirm' => true
+        'confirm' => true,
     ];
 
     public function index()
@@ -27,7 +23,7 @@ class AfterpayEcommercePaymentController extends Controller
         return $this->redirect('/');
     }
 
-    public function allowedActions($limitToClass = NULL)
+    public function allowedActions($limitToClass = null)
     {
         return self::$allowed_actions;
     }
@@ -39,53 +35,53 @@ class AfterpayEcommercePaymentController extends Controller
         $orderToken = $request->getVar('orderToken');
         $success = $request->getVar('status') === 'SUCCESS' ? true : false;
         $payment = AfterpayEcommercePayment::get()->filter(
-                [
-                    'OrderID' => $orderID,
-                    'AfterpayToken' => $orderToken
-                ]
-            )->first();
-        if($payment) {
+            [
+                'OrderID' => $orderID,
+                'AfterpayToken' => $orderToken,
+            ]
+        )->first();
+        if ($payment) {
             $payment->Status = 'Failure';
-            if($success) {
-
-                if($order) {
+            if ($success) {
+                if ($order) {
                     $api = $this->myAfterpayApi();
                     $response = $api->createPayment($orderToken, $order->ID);
-                    if($response instanceof Payment) {
+                    if ($response instanceof Payment) {
                         $payment->AfterpayConfirmationToken = serialize($response);
-                        if($response->getStatus() === 'APPROVED') {
+                        if ($response->getStatus() === 'APPROVED') {
                             $payment->Status = 'Success';
                         }
                     }
                 }
-
             } else {
                 $payment->Status = 'Failure';
             }
             $payment->write();
         }
-        if($order) {
+        if ($order) {
             return $this->redirect($order->Link());
         }
 
         return $this->redirect('/404-can-not-find-order');
-
     }
 
-    public function Link($action = null) :string
+    public function Link($action = null): string
     {
         return '/afterpaypayment/';
     }
 
-    public static function create_link($order) : string
+    public static function create_link($order): string
     {
-        return Director::absoluteURL('afterpaypayment/confirm/'.$order->ID.'/');
+        return Director::absoluteURL('afterpaypayment/confirm/' . $order->ID . '/');
     }
 
+    public function ShowAfterpay($total): bool
+    {
+        return $this->myAfterpayApi()->canProcessPayment(floatval($total));
+    }
 
     protected function capturePayment()
     {
-
     }
 
     protected function myAfterpayApi()
@@ -98,12 +94,6 @@ class AfterpayEcommercePaymentController extends Controller
             ->setIsServerAvailable(true);
     }
 
-
-    public function ShowAfterpay($total) : bool
-    {
-        return $this->myAfterpayApi()->canProcessPayment(floatval($total));
-    }
-
     // /**
     //  * @return EcommerceDBConfig
     //  */
@@ -111,5 +101,4 @@ class AfterpayEcommercePaymentController extends Controller
     {
         return EcommerceDBConfig::current_ecommerce_db_config();
     }
-
 }

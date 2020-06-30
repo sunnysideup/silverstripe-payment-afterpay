@@ -2,35 +2,18 @@
 
 namespace Sunnysideup\Afterpay\Model;
 
-
-use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
-use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
-use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\CMS\Controllers\ContentController;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\View\Requirements;
+use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
+use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
 use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
-
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz
@@ -41,22 +24,20 @@ use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
 
 class AfterpayEcommercePayment extends EcommercePayment
 {
-
-    private static $db = array(
-        'AfterpayResponse' => 'Text',
-        'AfterpayToken' => 'Text',
-        'AfterpayConfirmationToken' => 'Text',
-        'DebugMessage' => 'HTMLText',
-    );
-
-    private static $table_name = 'AfterpayEcommercePayment';
-
-    private static $logo = '/themes/base/images/AP-RGB-sm.svg';
-
     private const LIVE_URL = 'https://portal.afterpay.com/afterpay.js';
 
     private const DEV_URL = 'https://portal.sandbox.afterpay.com/afterpay.js';
 
+    private static $db = [
+        'AfterpayResponse' => 'Text',
+        'AfterpayToken' => 'Text',
+        'AfterpayConfirmationToken' => 'Text',
+        'DebugMessage' => 'HTMLText',
+    ];
+
+    private static $table_name = 'AfterpayEcommercePayment';
+
+    private static $logo = '/themes/base/images/AP-RGB-sm.svg';
 
     // DPS Information
 
@@ -65,30 +46,28 @@ class AfterpayEcommercePayment extends EcommercePayment
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-        $fields->replaceField("AfterpayResponse", new ReadonlyField("AfterpayResponse"));
-        $fields->replaceField("AfterpayToken", new ReadonlyField("AfterpayToken"));
-        $fields->replaceField("DebugMessage", new ReadonlyField("DebugMessage", "Debug info"));
+        $fields->replaceField('AfterpayResponse', new ReadonlyField('AfterpayResponse'));
+        $fields->replaceField('AfterpayToken', new ReadonlyField('AfterpayToken'));
+        $fields->replaceField('DebugMessage', new ReadonlyField('DebugMessage', 'Debug info'));
 
         return $fields;
     }
 
     public function getPaymentFormFields($amount = 0, $order = null)
     {
-        $logo = '<img src="'.$this->Config()->logo.'" alt="Payments powered by Afterpay" />';
+        $logo = '<img src="' . $this->Config()->logo . '" alt="Payments powered by Afterpay" />';
 
         $api = $this->myAfterpayApi();
         $html = '
             <p>
                 Afterpay
-                allows '.$api->getNumberOfPayments().' interest free payments of '.$api->getAmountPerPaymentForCurrentOrder($order)->Nice().' each.
-                ' . $logo .'
-                <a href="' . $this->config()->get("privacy_link"). '" target="_blank">Learn More</a>
+                allows ' . $api->getNumberOfPayments() . ' interest free payments of ' . $api->getAmountPerPaymentForCurrentOrder($order)->Nice() . ' each.
+                ' . $logo . '
+                <a href="' . $this->config()->get('privacy_link') . '" target="_blank">Learn More</a>
             </p>';
-        $fields = new FieldList([
+        return new FieldList([
             new LiteralField('AfterpayDetails', $html),
         ]);
-
-        return $fields;
     }
 
     public function getPaymentFormRequirements()
@@ -96,12 +75,11 @@ class AfterpayEcommercePayment extends EcommercePayment
         return [];
     }
 
-
     /**
      * @param array $data The form request data - see OrderForm
-     * @param OrderForm $form The form object submitted on
+     * @param \Sunnysideup\Ecommerce\Forms\OrderForm $form The form object submitted on
      *
-     * @return EcommercePayment_Result
+     * @return \Sunnysideup\Ecommerce\Money\Payment\EcommercePaymentResult
      */
     public function processPayment($data, $form)
     {
@@ -114,47 +92,44 @@ class AfterpayEcommercePayment extends EcommercePayment
     {
         if ($token) {
             /**
-            * build redirection page
-            **/
+             * build redirection page
+             **/
             $page = new SiteTree();
             $page->Title = 'Redirection to Afterpay...';
-            $page->Logo = '<img src="' . $this->config()->get("logo") . '" alt="Payments powered by Afterpay"/>';
+            $page->Logo = '<img src="' . $this->config()->get('logo') . '" alt="Payments powered by Afterpay"/>';
             $controller = new ContentController($page);
 
-            if(Director::isLive()) {
+            if (Director::isLive()) {
                 $requirement = self::LIVE_URL;
             } else {
                 $requirement = self::DEV_URL;
             }
             Requirements::clear();
             Requirements::insertHeadTags('<script type="text/javascript" src="' . $requirement . '"></script>');
-            Requirements::customScript('window.onload = function() { AfterPay.initialize({countryCode: "NZ"}); AfterPay.redirect({token: "'.$token.'"}); };');
+            Requirements::customScript('window.onload = function() { AfterPay.initialize({countryCode: "NZ"}); AfterPay.redirect({token: "' . $token . '"}); };');
 
             return EcommercePayment_Processing::create($controller->renderWith('PaymentProcessingPage'));
-        } else {
-            $page = new SiteTree();
-            $page->Title = 'Sorry, Afterpay can not be contacted at the moment ...';
-            $page->Logo = 'Sorry, an error has occured in contacting the Payment Processing Provider, please try again in a few minutes...';
-            $controller = new ContentController($page);
-
-            Requirements::clear();
-
-            return EcommercePayment_Failure::create($controller->renderWith('PaymentProcessingPage'));
         }
+        $page = new SiteTree();
+        $page->Title = 'Sorry, Afterpay can not be contacted at the moment ...';
+        $page->Logo = 'Sorry, an error has occured in contacting the Payment Processing Provider, please try again in a few minutes...';
+        $controller = new ContentController($page);
+
+        Requirements::clear();
+
+        return EcommercePayment_Failure::create($controller->renderWith('PaymentProcessingPage'));
     }
 
-
-    public function getTokenFromAfterpay($order) : string
+    public function getTokenFromAfterpay($order): string
     {
-        if(empty($this->AfterpayToken)) {
-
+        if (empty($this->AfterpayToken)) {
             $obj = OrderToAfterpayConverter::create($order);
             $data = $obj->convert();
 
             $api = $this->myAfterpayApi();
             $tokenObject = $api->createOrder($data);
             $this->AfterpayResponse = serialize($tokenObject);
-            if($tokenObject instanceof OrderToken) {
+            if ($tokenObject instanceof OrderToken) {
                 $tokenString = $tokenObject->getToken();
                 $this->AfterpayToken = $tokenString;
             } else {
@@ -181,5 +156,4 @@ class AfterpayEcommercePayment extends EcommercePayment
     {
         return EcommerceDBConfig::current_ecommerce_db_config();
     }
-
 }

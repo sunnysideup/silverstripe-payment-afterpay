@@ -1,28 +1,24 @@
 <?php
+
 namespace Sunnysideup\Afterpay\Factory;
+
+use CultureKings\Afterpay\Exception\ApiException;
 use CultureKings\Afterpay\Factory\MerchantApi;
-use CultureKings\Afterpay\Factory\SerializerFactory;
 // Models for Data //
+use CultureKings\Afterpay\Factory\SerializerFactory;
 use CultureKings\Afterpay\Model\Merchant\Authorization;
 use CultureKings\Afterpay\Model\Merchant\Configuration;
 use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
 use CultureKings\Afterpay\Model\Merchant\Payment;
-use CultureKings\Afterpay\Exception\ApiException;
 use CultureKings\Afterpay\Service\Merchant\Payments;
 use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
-
-
-
-
-
 use SilverStripe\Control\Director;
-use Sunnysideup\Ecommerce\Api\ShoppingCart;
-use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\View\ViewableData;
-
+use Sunnysideup\Ecommerce\Api\ShoppingCart;
+use Sunnysideup\Ecommerce\Model\Order;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
@@ -33,10 +29,50 @@ class SilverstripeMerchantApi extends ViewableData
     # global settings
     ############################
     private const CONNECTION_URL_TEST = 'https://api-sandbox.afterpay.com/v1/';
+
     private const CONNECTION_URL_LIVE = 'https://api.afterpay.com/v1/';
+
+    ############################
+    # internal variables
+    ############################
+    protected $authorization = null;
+
+    protected $client = null;
+
+    /**
+     * Configuration information
+     * @var Configuration[]
+     */
+    protected $configurationInfo = null;
+
+    /**
+     * Order Token
+     * @var OrderToken
+     */
+    protected $orderToken = null;
+
+    /**
+     * Payment information
+     * @var Payment
+     */
+    protected $paymentInfo = null;
+
+    ############################
+    # instance
+    ############################
+
+    /**
+     * this
+     * @var SilverstripeMerchantApi|null
+     */
+    protected static $singleton_cache = null;
+
     private static $merchant_id = 0;
+
     private static $secret_key = '';
+
     private static $number_of_payments = 4;
+
     private static $merchant_name = '';
 
     /**
@@ -48,62 +84,36 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # global instance settings
     ############################
+
     /**
-     *
      * @var float
      */
     private $minPrice = 0;
+
     /**
-     *
      * @var float
      */
     private $maxPrice = 0;
+
     /**
-     *
      * @var bool
      */
     private $isTest = false;
+
     /**
-     *
      * @var bool
      */
     private $isServerAvailable = false;
 
-    ############################
-    # internal variables
-    ############################
-    protected $authorization = null;
-    protected $client = null;
-    /**
-     * Configuration information
-     * @var Configuration[]
-     */
-    protected $configurationInfo = null;
-    /**
-     * Order Token
-     * @var OrderToken
-     */
-    protected $orderToken = null;
-    /**
-     * Payment information
-     * @var Payment
-     */
-    protected $paymentInfo = null;
-
-    ############################
-    # instance
-    ############################
-    /**
-     * this
-     * @var SilverstripeMerchantApi|null
-     */
-    protected static $singleton_cache = null;
-      public function __construct(string $initMethod = 'instance')
+    public function __construct(string $initMethod = 'instance')
     {
         if ($initMethod !== 'singleton') {
             user_error('Please use the inst() static method to create me!');
         }
+
+        parent::__construct();
     }
+
     /**
      * Singleton instance pattern
      * @return self
@@ -122,6 +132,7 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # setters
     ############################
+
     /**
      * Setter for is server available
      * If no server exists then collect fake responses from a cache
@@ -145,7 +156,8 @@ class SilverstripeMerchantApi extends ViewableData
 
         return $this;
     }
-      /**
+
+    /**
      * set the minimum and maximum price to use Afterpay
      * This can overrule settings from Afterpay server
      * and therefore make it faster ...
@@ -163,6 +175,7 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # getters
     ############################
+
     /**
      * Getter for is server available
      * @return bool Are any servers available? Otherwise use cache
@@ -195,7 +208,7 @@ class SilverstripeMerchantApi extends ViewableData
         return false;
     }
 
-    public function getNumberOfPayments() : int
+    public function getNumberOfPayments(): int
     {
         return $this->Config()->get('number_of_payments');
     }
@@ -207,17 +220,17 @@ class SilverstripeMerchantApi extends ViewableData
      */
     public function getAmountPerPaymentForCurrentOrder(?Order $order = null)
     {
-        if(! $order) {
+        if (! $order) {
             $order = ShoppingCart::current_order();
         }
         $amountPerPayment = 0;
-        if($order) {
+        if ($order) {
             $totalAmount = $order->Total();
-            if($totalAmount) {
+            if ($totalAmount) {
                 $amountPerPayment = $this->getAmountPerPayment(floatval($totalAmount));
             }
         }
-        return DBField::create_field('Currency',  $amountPerPayment);
+        return DBField::create_field('Currency', $amountPerPayment);
     }
 
     /**
@@ -230,17 +243,15 @@ class SilverstripeMerchantApi extends ViewableData
         $price = floatval($price);
         if ($this->canProcessPayment($price)) {
             $numberOfPayments = $this->getNumberOfPayments();
-            if($numberOfPayments) {
+            if ($numberOfPayments) {
                 //make cents into dollars
                 $amountPerPayment = $price * 100;
                 //divide by four
-                $amountPerPayment = $amountPerPayment /  $this->getNumberOfPayments();
+                $amountPerPayment /= $this->getNumberOfPayments();
                 //round up anything beyond cents
                 $amountPerPayment = ceil($amountPerPayment);
                 //bring back to cents
-                $amountPerPayment = $amountPerPayment / 100;
-
-                return $amountPerPayment;
+                return $amountPerPayment / 100;
             }
         }
         // user_error('This amount can not be processed', E_USER_NOTICE);
@@ -258,7 +269,7 @@ class SilverstripeMerchantApi extends ViewableData
      */
     public function createOrder(OrderDetails $order)
     {
-          // Create the order, collect the token //
+        // Create the order, collect the token //
         if ($this->isServerAvailable) {
             try {
                 $this->orderToken = MerchantApi::orders(
@@ -287,12 +298,12 @@ class SilverstripeMerchantApi extends ViewableData
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
         if ($this->isServerAvailable) {
-            if(! $orderTokenAsString) {
+            if (! $orderTokenAsString) {
                 if ($this->orderToken !== null) {
                     $orderTokenAsString = $this->orderToken->token;
                 }
-              }
-            if($orderTokenAsString) {
+            }
+            if ($orderTokenAsString) {
                 try {
                     $this->paymentInfo = MerchantApi::payments(
                         $this->authorization,
@@ -319,12 +330,13 @@ class SilverstripeMerchantApi extends ViewableData
     ############################
     # internal do-ers
     ############################
+
     /**
      * Initialize the authorization field with the set merchant id and secret key
      */
     protected function ping_end_point(bool $pingAgain = false): bool
     {
-        if($this->isServerAvailable === null || $pingAgain) {
+        if ($this->isServerAvailable === null || $pingAgain) {
             $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
             $this->isServerAvailable = $answer ? true : false;
         }
@@ -336,7 +348,7 @@ class SilverstripeMerchantApi extends ViewableData
      */
     protected function setupAuthorization(bool $setupAgain = false): Authorization
     {
-        if($this->authorization === null || $setupAgain) {
+        if ($this->authorization === null || $setupAgain) {
             $this->authorization = new Authorization(
                 $this->getConnectionURL(),
                 $this->Config()->get('merchant_id'),
@@ -350,7 +362,7 @@ class SilverstripeMerchantApi extends ViewableData
     {
         //we need to make sure authorization is set up.
         $this->setupAuthorization();
-        if($this->client === null || $setupAgain) {
+        if ($this->client === null || $setupAgain) {
             $this->client = new Client(
                 [
                     'base_uri' => $this->authorization->getEndpoint(),
@@ -363,11 +375,11 @@ class SilverstripeMerchantApi extends ViewableData
         return $this->client;
     }
 
-    protected function getUserAgentString() : string
+    protected function getUserAgentString(): string
     {
-        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; '.
-            $this->Config()->get('merchant_name').'/ '.
-            $this->Config()->get('merchant_id').' ) '.
+        return 'AfterpayModule/ 1.0 (Silverstripe/ 3 ; ' .
+            $this->Config()->get('merchant_name') . '/ ' .
+            $this->Config()->get('merchant_id') . ' ) ' .
             Director::absoluteBaseURL() . '/';
     }
 
@@ -378,8 +390,8 @@ class SilverstripeMerchantApi extends ViewableData
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
-        if($this->configurationInfo === null || $getConfigAgain) {
-            if($this->findExpectationFile('configuration_details.json')) {
+        if ($this->configurationInfo === null || $getConfigAgain) {
+            if ($this->findExpectationFile('configuration_details.json')) {
                 //look for local config details (FASTER)
                 $this->configurationInfo = $this->localExpecationFileToClass(
                     'configuration_details.json',
@@ -405,7 +417,7 @@ class SilverstripeMerchantApi extends ViewableData
     protected function retrieveMinAndMaxFromConfig()
     {
         $this->retrieveConfig();
-        if($this->configurationInfo) {
+        if ($this->configurationInfo) {
             foreach ($this->configurationInfo as $config) {
                 switch ($config->getType()) {
                     case 'PAY_BY_INSTALLMENT':
@@ -421,7 +433,7 @@ class SilverstripeMerchantApi extends ViewableData
         }
     }
 
-    protected function getConnectionURL() : string
+    protected function getConnectionURL(): string
     {
         return $this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE;
     }
@@ -429,76 +441,43 @@ class SilverstripeMerchantApi extends ViewableData
     ########################################
     # helpers
     ########################################
+
     /**
-     *
      * @param  string $relativeFileName
      * @return string
      */
-    protected function findExpectationFile(string $relativeFileName) : string
+    protected function findExpectationFile(string $relativeFileName): string
     {
-        if($relativeFileName) {
+        if ($relativeFileName) {
             $folder = $this->Config()->get('expectations_folder');
             $absoluteFileName = Director::baseFolder() . '/' . $folder . '/' . $relativeFileName;
-            if(file_exists($absoluteFileName)) {
+            if (file_exists($absoluteFileName)) {
                 return $absoluteFileName;
-            } else {
-                user_error('bad file specified: '.$absoluteFileName);
             }
+            user_error('bad file specified: ' . $absoluteFileName);
         }
         return '';
     }
 
-
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: automated upgrade
-  * OLD: $className (case sensitive)
-  * NEW: $className (COMPLEX)
-  * EXP: Check if the class name can still be used as such
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
+    /**
+     * ### @@@@ START REPLACEMENT @@@@ ###
+     * test this function still works
+     * - $className likely does so mainly need to make sure that file_get_contents still works as desired
+     */
     protected function localExpecationFileToClass($fileName, $className)
     {
         $absoluteFileName = $this->findExpectationFile($fileName);
-        if($absoluteFileName) {
-
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: automated upgrade
-  * OLD: file_get_contents (case sensitive)
-  * NEW: file_get_contents (COMPLEX)
-  * EXP: Use new asset abstraction (https://docs.silverstripe.org/en/4/changelogs/4.0.0#asset-storage
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
+        if ($absoluteFileName) {
             $json = file_get_contents($absoluteFileName);
-            if($json) {
+            if ($json) {
                 return SerializerFactory::getSerializer()->deserialize(
                     (string) $json,
-
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: automated upgrade
-  * OLD: $className (case sensitive)
-  * NEW: $className (COMPLEX)
-  * EXP: Check if the class name can still be used as such
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
                     $className,
                     'json'
                 );
             }
         }
         user_error('Could not create expectation file.');
-
-
-/**
-  * ### @@@@ START REPLACEMENT @@@@ ###
-  * WHY: automated upgrade
-  * OLD: $className (case sensitive)
-  * NEW: $className (COMPLEX)
-  * EXP: Check if the class name can still be used as such
-  * ### @@@@ STOP REPLACEMENT @@@@ ###
-  */
         return new $className();
     }
 }
