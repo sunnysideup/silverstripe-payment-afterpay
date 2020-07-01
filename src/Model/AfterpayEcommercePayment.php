@@ -14,6 +14,8 @@ use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
 use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
+use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentFailure;
+use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessing;
 
 /**
  *@author nicolaas[at]sunnysideup.co.nz
@@ -108,7 +110,7 @@ class AfterpayEcommercePayment extends EcommercePayment
             Requirements::insertHeadTags('<script type="text/javascript" src="' . $requirement . '"></script>');
             Requirements::customScript('window.onload = function() { AfterPay.initialize({countryCode: "NZ"}); AfterPay.redirect({token: "' . $token . '"}); };');
 
-            return EcommercePayment_Processing::create($controller->renderWith('PaymentProcessingPage'));
+            return EcommercePaymentProcessing::create($controller->renderWith('Sunnysideup\Ecommerce\PaymentProcessingPage'));
         }
         $page = new SiteTree();
         $page->Title = 'Sorry, Afterpay can not be contacted at the moment ...';
@@ -117,7 +119,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
         Requirements::clear();
 
-        return EcommercePayment_Failure::create($controller->renderWith('PaymentProcessingPage'));
+        return EcommercePaymentFailure::create($controller->renderWith('Sunnysideup\Ecommerce\PaymentProcessingPage'));
     }
 
     public function getTokenFromAfterpay($order): string
