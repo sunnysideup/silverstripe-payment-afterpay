@@ -1,3 +1,4 @@
 mappings:
   AfterpayEcommercePaymentController: Sunnysideup\Afterpay\Control\AfterpayEcommercePaymentController
   OrderToAfterpayConverter: Sunnysideup\Afterpay\Api\OrderToAfterpayConverter
+  AfterpayEcommercePayment: Sunnysideup\Afterpay\Model\AfterpayEcommercePayment

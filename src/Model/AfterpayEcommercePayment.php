@@ -30,6 +30,8 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     private const DEV_URL = 'https://portal.sandbox.afterpay.com/afterpay.js';
 
+    private static $table_name = 'AfterpayEcommercePayment';
+
     private static $db = [
         'AfterpayResponse' => 'Text',
         'AfterpayToken' => 'Text',
@@ -37,7 +39,6 @@ class AfterpayEcommercePayment extends EcommercePayment
         'DebugMessage' => 'HTMLText',
     ];
 
-    private static $table_name = 'AfterpayEcommercePayment';
 
     private static $logo = '/themes/base/images/AP-RGB-sm.svg';
 
