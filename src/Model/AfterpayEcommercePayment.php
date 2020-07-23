@@ -12,6 +12,7 @@ use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\View\Requirements;
 use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
+use Sunnysideup\Ecommerce\Forms\OrderForm;
 use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
 use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentFailure;
@@ -80,11 +81,11 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     /**
      * @param array $data The form request data - see OrderForm
-     * @param \Sunnysideup\Ecommerce\Forms\OrderForm $form The form object submitted on
+     * @param OrderForm $form The form object submitted on
      *
      * @return \Sunnysideup\Ecommerce\Money\Payment\EcommercePaymentResult
      */
-    public function processPayment($data, $form)
+    public function processPayment($data, OrderForm $form)
     {
         $order = $this->Order();
         $token = $this->getTokenFromAfterpay($order);
