@@ -1,5 +1,5 @@
 {
-    "name": "sunnysideup/afterpay",
+    "name": "sunnysideup/payment-afterpay",
     "type": "silverstripe-vendormodule",
     "description": "Integrate easily with the api.afterpay.com API",
     "license": "BSD-3-Clause",
