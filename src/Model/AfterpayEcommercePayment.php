@@ -40,7 +40,6 @@ class AfterpayEcommercePayment extends EcommercePayment
         'DebugMessage' => 'HTMLText',
     ];
 
-
     private static $logo = '/themes/base/images/AP-RGB-sm.svg';
 
     // DPS Information
