@@ -459,12 +459,7 @@ class SilverstripeMerchantApi extends ViewableData
         return '';
     }
 
-    /**
-     * ### @@@@ START REPLACEMENT @@@@ ###
-     * test this function still works
-     * - $className likely does so mainly need to make sure that file_get_contents still works as desired
-     */
-    protected function localExpecationFileToClass($fileName, $className)
+    protected function localExpecationFileToClass(string $fileName, string $className)
     {
         $absoluteFileName = $this->findExpectationFile($fileName);
         if ($absoluteFileName) {
