@@ -75,10 +75,10 @@ class MyProduct extends Product
     {
         return SilverstripeMerchantApi::inst()
             ->setMinAndMaxPrice(
-                (float) EcommerceConfig::inst()->AfterpayMinValue,
-                (float) EcommerceConfig::inst()->AfterpayMaxValue
+                (float) EcommerceDBConfig::current_ecommerce_db_config()->AfterpayMinValue,
+                (float) EcommerceDBConfig::current_ecommerce_db_config()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(EcommerceConfig::inst()->ShowAfterpayOption);
+            ->setIsServerAvailable(EcommerceDBConfig::current_ecommerce_db_config()->ShowAfterpayOption);
     }
 
     public function getAfterpayNumberOfPayments() : int

@@ -88,8 +88,8 @@ class AfterpayEcommercePaymentController extends Controller
     {
         return SilverstripeMerchantApi::inst()
             ->setMinAndMaxPrice(
-                EcommerceConfig::inst()->AfterpayMinValue,
-                EcommerceConfig::inst()->AfterpayMaxValue
+                EcommerceDBConfig::current_ecommerce_db_config()->AfterpayMinValue,
+                EcommerceDBConfig::current_ecommerce_db_config()->AfterpayMaxValue
             )
             ->setIsServerAvailable(true);
     }
