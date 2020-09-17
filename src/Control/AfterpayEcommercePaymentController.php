@@ -10,6 +10,7 @@ use SilverStripe\Control\Director;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig;
+use Sunnysideup\Ecommerce\Config\EcommerceConfig;
 use Sunnysideup\Ecommerce\Model\Order;
 
 class AfterpayEcommercePaymentController extends Controller
