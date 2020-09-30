@@ -35,7 +35,9 @@ modified:	src/Factory/SilverstripeMerchantApi.php
 +use SilverStripe\Control\Director;
 +use Sunnysideup\Ecommerce\Api\ShoppingCart;
 +use SilverStripe\ORM\FieldType\DBField;
-+use SilverStripe\View\ViewableData;
++use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
 +
 
  /**

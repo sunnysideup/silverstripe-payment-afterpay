@@ -16,15 +16,21 @@ use GuzzleHttp\Client;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\FieldType\DBCurrency;
 use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
 use Sunnysideup\Ecommerce\Api\ShoppingCart;
 use Sunnysideup\Ecommerce\Model\Order;
 
 /**
  * An API which handles the main steps needed for a website to function with afterpay
  */
-class SilverstripeMerchantApi extends ViewableData
+class SilverstripeMerchantApi
 {
+    use Configurable;
+    use Extensible;
+    use Injectable;
+
     ############################
     # global settings
     ############################
