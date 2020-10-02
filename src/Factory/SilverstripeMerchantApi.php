@@ -116,8 +116,6 @@ class SilverstripeMerchantApi
         if ($initMethod !== 'singleton') {
             user_error('Please use the inst() static method to create me!');
         }
-
-        parent::__construct();
     }
 
     /**
