@@ -41,7 +41,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     private static $table_name = 'AfterpayEcommercePayment';
 
-    private static $logo = '/themes/base/images/AP-RGB-sm.svg';
+    private static $logo = '/afterpay/client/images/afterpay-logo-black.png';
 
     private const LIVE_URL = 'https://portal.afterpay.com/afterpay.js';
 
