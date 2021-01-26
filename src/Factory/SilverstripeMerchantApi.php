@@ -14,11 +14,11 @@ use CultureKings\Afterpay\Model\Merchant\Payment;
 use CultureKings\Afterpay\Service\Merchant\Payments;
 use GuzzleHttp\Client;
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\FieldType\DBCurrency;
-use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\ORM\FieldType\DBCurrency;
+use SilverStripe\ORM\FieldType\DBField;
 use Sunnysideup\Ecommerce\Api\ShoppingCart;
 use Sunnysideup\Ecommerce\Model\Order;
 
