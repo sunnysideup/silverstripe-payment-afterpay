@@ -34,34 +34,41 @@ class SilverstripeMerchantApi
     ############################
     # global settings
     ############################
+
+    /**
+     * @var string
+     */
     private const CONNECTION_URL_TEST = 'https://api-sandbox.afterpay.com/v1/';
 
+    /**
+     * @var string
+     */
     private const CONNECTION_URL_LIVE = 'https://api.afterpay.com/v1/';
 
     ############################
     # internal variables
     ############################
-    protected $authorization = null;
+    protected $authorization;
 
-    protected $client = null;
+    protected $client;
 
     /**
      * Configuration information
      * @var Configuration[]
      */
-    protected $configurationInfo = null;
+    protected $configurationInfo = [];
 
     /**
      * Order Token
      * @var OrderToken
      */
-    protected $orderToken = null;
+    protected $orderToken;
 
     /**
      * Payment information
      * @var Payment
      */
-    protected $paymentInfo = null;
+    protected $paymentInfo;
 
     ############################
     # instance
@@ -71,7 +78,7 @@ class SilverstripeMerchantApi
      * this
      * @var SilverstripeMerchantApi|null
      */
-    protected static $singleton_cache = null;
+    protected static $singleton_cache;
 
     private static $merchant_id = 0;
 
@@ -120,14 +127,13 @@ class SilverstripeMerchantApi
 
     /**
      * Singleton instance pattern
-     * @return self
      */
     public static function inst(): self
     {
         if (self::$singleton_cache === null) {
             self::$singleton_cache = new self('singleton');
         }
-        self::$singleton_cache->isTest = (Director::isLive() ? false : true);
+        self::$singleton_cache->isTest = (! Director::isLive());
         self::$singleton_cache->setupAuthorization();
         self::$singleton_cache->setupGuzzleClient();
         return self::$singleton_cache;
@@ -165,9 +171,6 @@ class SilverstripeMerchantApi
      * set the minimum and maximum price to use Afterpay
      * This can overrule settings from Afterpay server
      * and therefore make it faster ...
-     * @param  float $minPrice
-     * @param  float $maxPrice
-     * @return self
      */
     public function setMinAndMaxPrice(float $minPrice, float $maxPrice): self
     {
@@ -273,15 +276,14 @@ class SilverstripeMerchantApi
      */
     public function createOrder(OrderDetails $order)
     {
-        // Create the order, collect the token //
         if ($this->isServerAvailable) {
             try {
                 $this->orderToken = MerchantApi::orders(
                     $this->authorization,
                     $this->client
                 )->create($order);
-            } catch (ApiException $e) {
-                return $e;
+            } catch (ApiException $apiException) {
+                return $apiException;
             }
         } else {
             $this->orderToken = $this->localExpecationFileToClass(
@@ -294,7 +296,6 @@ class SilverstripeMerchantApi
 
     /**
      * Capture the payment after the order has been placed
-     * @param  string $orderTokenAsString
      * @param  string $merchantReference Optional: Update the merchant reference
      *
      * @return Payments|ApiException
@@ -342,7 +343,7 @@ class SilverstripeMerchantApi
     {
         if ($this->isServerAvailable === null || $pingAgain) {
             $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
-            $this->isServerAvailable = $answer ? true : false;
+            $this->isServerAvailable = (bool) $answer;
         }
         return $this->isServerAvailable;
     }
@@ -394,24 +395,21 @@ class SilverstripeMerchantApi
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
-        if ($this->configurationInfo === null || $getConfigAgain) {
+        if ($this->configurationInfo === [] || $getConfigAgain) {
             if ($this->findExpectationFile('configuration_details.json')) {
                 //look for local config details (FASTER)
                 $this->configurationInfo = $this->localExpecationFileToClass(
                     'configuration_details.json',
                     sprintf('array<%s>', Configuration::class)
                 );
-            } else {
-                // Collect the configuration data //
-                if ($this->isServerAvailable) {
-                    try {
-                        $this->configurationInfo = MerchantApi::configuration(
-                            $this->authorization,
-                            $this->client
-                        )->get();
-                    } catch (ApiException $e) {
-                        return null;
-                    }
+            } elseif ($this->isServerAvailable) {
+                try {
+                    $this->configurationInfo = MerchantApi::configuration(
+                        $this->authorization,
+                        $this->client
+                    )->get();
+                } catch (ApiException $e) {
+                    return null;
                 }
             }
         }
@@ -423,15 +421,9 @@ class SilverstripeMerchantApi
         $this->retrieveConfig();
         if ($this->configurationInfo) {
             foreach ($this->configurationInfo as $config) {
-                switch ($config->getType()) {
-                    case 'PAY_BY_INSTALLMENT':
-                        $this->minPrice = $config->getMaximumAmount()->getAmount();
-                        $this->maxPrice = $config->getMinimumAmount()->getAmount();
-                        // code...
-                        break;
-                    default:
-                        // code...
-                        break;
+                if ($config->getType() === 'PAY_BY_INSTALLMENT') {
+                    $this->minPrice = $config->getMaximumAmount()->getAmount();
+                    $this->maxPrice = $config->getMinimumAmount()->getAmount();
                 }
             }
         }
@@ -446,10 +438,6 @@ class SilverstripeMerchantApi
     # helpers
     ########################################
 
-    /**
-     * @param  string $relativeFileName
-     * @return string
-     */
     protected function findExpectationFile(string $relativeFileName): string
     {
         if ($relativeFileName) {

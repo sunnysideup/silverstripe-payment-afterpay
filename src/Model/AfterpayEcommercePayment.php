@@ -27,8 +27,14 @@ use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessin
 
 class AfterpayEcommercePayment extends EcommercePayment
 {
+    /**
+     * @var string
+     */
     private const LIVE_URL = 'https://portal.afterpay.com/afterpay.js';
 
+    /**
+     * @var string
+     */
     private const DEV_URL = 'https://portal.sandbox.afterpay.com/afterpay.js';
 
     private static $table_name = 'AfterpayEcommercePayment';
@@ -102,11 +108,7 @@ class AfterpayEcommercePayment extends EcommercePayment
             $page->Logo = '<img src="' . $this->config()->get('logo') . '" alt="Payments powered by Afterpay"/>';
             $controller = new ContentController($page);
 
-            if (Director::isLive()) {
-                $requirement = self::LIVE_URL;
-            } else {
-                $requirement = self::DEV_URL;
-            }
+            $requirement = Director::isLive() ? self::LIVE_URL : self::DEV_URL;
             Requirements::clear();
             Requirements::insertHeadTags('<script type="text/javascript" src="' . $requirement . '"></script>');
             Requirements::customScript('window.onload = function() { AfterPay.initialize({countryCode: "NZ"}); AfterPay.redirect({token: "' . $token . '"}); };');

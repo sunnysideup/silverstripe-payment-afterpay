@@ -30,10 +30,10 @@ class AfterpayEcommercePaymentController extends Controller
 
     public function confirm($request)
     {
-        $orderID = intval($request->param('ID'));
+        $orderID = (int) $request->param('ID');
         $order = Order::get()->byID($orderID);
         $orderToken = $request->getVar('orderToken');
-        $success = $request->getVar('status') === 'SUCCESS' ? true : false;
+        $success = $request->getVar('status') === 'SUCCESS';
         $payment = AfterpayEcommercePayment::get()->filter(
             [
                 'OrderID' => $orderID,
