@@ -14,8 +14,8 @@ use Sunnysideup\Afterpay\Api\OrderToAfterpayConverter;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Ecommerce\Config\EcommerceConfig;
 use Sunnysideup\Ecommerce\Forms\OrderForm;
-use Sunnysideup\Ecommerce\Model\Order;
 use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
+use Sunnysideup\Ecommerce\Model\Order;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentFailure;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessing;
 
@@ -63,7 +63,7 @@ class AfterpayEcommercePayment extends EcommercePayment
         return $fields;
     }
 
-    public function getPaymentFormFields(?float $amount = 0, ?Order $order = null) : FieldList
+    public function getPaymentFormFields(?float $amount = 0, ?Order $order = null): FieldList
     {
         $logo = '<img src="' . $this->Config()->logo . '" alt="Payments powered by Afterpay" />';
 
