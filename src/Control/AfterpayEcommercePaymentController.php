@@ -4,9 +4,7 @@ namespace Sunnysideup\Afterpay\Control;
 
 use CultureKings\Afterpay\Model\Merchant\Payment;
 use SilverStripe\Control\Controller;
-
 use SilverStripe\Control\Director;
-
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use Sunnysideup\Ecommerce\Config\EcommerceConfig;
@@ -33,7 +31,7 @@ class AfterpayEcommercePaymentController extends Controller
         $orderID = (int) $request->param('ID');
         $order = Order::get()->byID($orderID);
         $orderToken = $request->getVar('orderToken');
-        $success = $request->getVar('status') === 'SUCCESS';
+        $success = 'SUCCESS' === $request->getVar('status');
         $payment = AfterpayEcommercePayment::get()->filter(
             [
                 'OrderID' => $orderID,
@@ -48,7 +46,7 @@ class AfterpayEcommercePaymentController extends Controller
                     $response = $api->createPayment($orderToken, $order->ID);
                     if ($response instanceof Payment) {
                         $payment->AfterpayConfirmationToken = serialize($response);
-                        if ($response->getStatus() === 'APPROVED') {
+                        if ('APPROVED' === $response->getStatus()) {
                             $payment->Status = 'Success';
                         }
                     }
@@ -91,6 +89,7 @@ class AfterpayEcommercePaymentController extends Controller
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true);
+            ->setIsServerAvailable(true)
+        ;
     }
 }

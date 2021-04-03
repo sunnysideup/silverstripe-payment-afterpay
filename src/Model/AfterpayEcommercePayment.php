@@ -22,10 +22,7 @@ use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessin
 /**
  *@author nicolaas[at]sunnysideup.co.nz
  *@description: OrderNumber and PaymentID
- *
- *
- **/
-
+ */
 class AfterpayEcommercePayment extends EcommercePayment
 {
     /**
@@ -75,6 +72,7 @@ class AfterpayEcommercePayment extends EcommercePayment
                 ' . $logo . '
                 <a href="' . $this->config()->get('privacy_link') . '" target="_blank">Learn More</a>
             </p>';
+
         return new FieldList([
             new LiteralField('AfterpayDetails', $html),
         ]);
@@ -86,7 +84,7 @@ class AfterpayEcommercePayment extends EcommercePayment
     }
 
     /**
-     * @param array $data The form request data - see OrderForm
+     * @param array     $data The form request data - see OrderForm
      * @param OrderForm $form The form object submitted on
      *
      * @return \Sunnysideup\Ecommerce\Money\Payment\EcommercePaymentResult
@@ -95,6 +93,7 @@ class AfterpayEcommercePayment extends EcommercePayment
     {
         $order = $this->Order();
         $token = $this->getTokenFromAfterpay($order);
+
         return $this->executeURL($token);
     }
 
@@ -102,8 +101,8 @@ class AfterpayEcommercePayment extends EcommercePayment
     {
         if ($token) {
             /**
-             * build redirection page
-             **/
+             * build redirection page.
+             */
             $page = new SiteTree();
             $page->Title = 'Redirection to Afterpay...';
             $page->Logo = '<img src="' . $this->config()->get('logo') . '" alt="Payments powered by Afterpay"/>';
@@ -155,6 +154,7 @@ class AfterpayEcommercePayment extends EcommercePayment
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true);
+            ->setIsServerAvailable(true)
+        ;
     }
 }

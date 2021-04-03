@@ -6,7 +6,6 @@ use CultureKings\Afterpay\Model\Item;
 use CultureKings\Afterpay\Model\Merchant\Consumer;
 use CultureKings\Afterpay\Model\Merchant\Contact;
 use CultureKings\Afterpay\Model\Merchant\Discount;
-
 use CultureKings\Afterpay\Model\Merchant\MerchantOptions;
 use CultureKings\Afterpay\Model\Merchant\OrderDetails;
 use CultureKings\Afterpay\Model\Merchant\ShippingCourier;
@@ -150,7 +149,7 @@ class OrderToAfterpayConverter extends OrderConverter
         if ($this->hasCourier()) {
             $courier = new ShippingCourier();
             $tomorrowTS = strtotime('tomorrow');
-            $dateTime = new DateTime(Date('Y-m-d', $tomorrowTS));
+            $dateTime = new DateTime(date('Y-m-d', $tomorrowTS));
             $courier->setShippedAt($dateTime);
             $courier->setName('tba');
             $courier->setTracking('tba');

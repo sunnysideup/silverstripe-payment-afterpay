@@ -23,7 +23,7 @@ use Sunnysideup\Ecommerce\Api\ShoppingCart;
 use Sunnysideup\Ecommerce\Model\Order;
 
 /**
- * An API which handles the main steps needed for a website to function with afterpay
+ * An API which handles the main steps needed for a website to function with afterpay.
  */
 class SilverstripeMerchantApi
 {
@@ -31,9 +31,9 @@ class SilverstripeMerchantApi
     use Extensible;
     use Injectable;
 
-    ############################
-    # global settings
-    ############################
+    //###########################
+    // global settings
+    //###########################
 
     /**
      * @var string
@@ -45,38 +45,42 @@ class SilverstripeMerchantApi
      */
     private const CONNECTION_URL_LIVE = 'https://api.afterpay.com/v1/';
 
-    ############################
-    # internal variables
-    ############################
+    //###########################
+    // internal variables
+    //###########################
     protected $authorization;
 
     protected $client;
 
     /**
-     * Configuration information
+     * Configuration information.
+     *
      * @var Configuration[]
      */
     protected $configurationInfo = [];
 
     /**
-     * Order Token
+     * Order Token.
+     *
      * @var OrderToken
      */
     protected $orderToken;
 
     /**
-     * Payment information
+     * Payment information.
+     *
      * @var Payment
      */
     protected $paymentInfo;
 
-    ############################
-    # instance
-    ############################
+    //###########################
+    // instance
+    //###########################
 
     /**
-     * this
-     * @var SilverstripeMerchantApi|null
+     * this.
+     *
+     * @var null|SilverstripeMerchantApi
      */
     protected static $singleton_cache;
 
@@ -89,14 +93,15 @@ class SilverstripeMerchantApi
     private static $merchant_name = '';
 
     /**
-     * see: afterpay/expectations as an example
+     * see: afterpay/expectations as an example.
+     *
      * @var string
      */
     private static $expectations_folder = 'vendor/sunnysideup/expectations';
 
-    ############################
-    # global instance settings
-    ############################
+    //###########################
+    // global instance settings
+    //###########################
 
     /**
      * @var float
@@ -120,34 +125,37 @@ class SilverstripeMerchantApi
 
     public function __construct(string $initMethod = 'instance')
     {
-        if ($initMethod !== 'singleton') {
+        if ('singleton' !== $initMethod) {
             user_error('Please use the inst() static method to create me!');
         }
     }
 
     /**
-     * Singleton instance pattern
+     * Singleton instance pattern.
      */
     public static function inst(): self
     {
-        if (self::$singleton_cache === null) {
+        if (null === self::$singleton_cache) {
             self::$singleton_cache = new self('singleton');
         }
         self::$singleton_cache->isTest = (! Director::isLive());
         self::$singleton_cache->setupAuthorization();
         self::$singleton_cache->setupGuzzleClient();
+
         return self::$singleton_cache;
     }
 
-    ############################
-    # setters
-    ############################
+    //###########################
+    // setters
+    //###########################
 
     /**
      * Setter for is server available
-     * If no server exists then collect fake responses from a cache
-     * @param  bool $available Are there any external APIs available
-     * @return self            Daisy chain
+     * If no server exists then collect fake responses from a cache.
+     *
+     * @param bool $available Are there any external APIs available
+     *
+     * @return self Daisy chain
      */
     public function setIsServerAvailable(bool $available): self
     {
@@ -176,15 +184,17 @@ class SilverstripeMerchantApi
     {
         $this->minPrice = $minPrice;
         $this->maxPrice = $maxPrice;
+
         return $this;
     }
 
-    ############################
-    # getters
-    ############################
+    //###########################
+    // getters
+    //###########################
 
     /**
-     * Getter for is server available
+     * Getter for is server available.
+     *
      * @return bool Are any servers available? Otherwise use cache
      */
     public function getIsServerAvailable(): bool
@@ -193,9 +203,11 @@ class SilverstripeMerchantApi
     }
 
     /**
-     * Can the payment be processed (in range of the max and min price)
-     * @param  float $price Price of product
-     * @return bool         Can the payment be processed (true / false)
+     * Can the payment be processed (in range of the max and min price).
+     *
+     * @param float $price Price of product
+     *
+     * @return bool Can the payment be processed (true / false)
      */
     public function canProcessPayment($price): bool
     {
@@ -207,11 +219,13 @@ class SilverstripeMerchantApi
                 }
                 if (empty($this->minPrice) || empty($this->maxPrice)) {
                     return false;
-                } elseif ($price >= $this->minPrice && $price <= $this->maxPrice) {
+                }
+                if ($price >= $this->minPrice && $price <= $this->maxPrice) {
                     return true;
                 }
             }
         }
+
         return false;
     }
 
@@ -237,13 +251,16 @@ class SilverstripeMerchantApi
                 $amountPerPayment = $this->getAmountPerPayment(floatval($totalAmount));
             }
         }
+
         return DBField::create_field('Currency', $amountPerPayment);
     }
 
     /**
-     * Get the payment installations for afterpay (return 0 if price is out of range)
-     * @param  float $price Price of the product
-     * @return float        (Price / 4) or 0 if fail
+     * Get the payment installations for afterpay (return 0 if price is out of range).
+     *
+     * @param float $price Price of the product
+     *
+     * @return float (Price / 4) or 0 if fail
      */
     public function getAmountPerPayment($price): float
     {
@@ -270,9 +287,11 @@ class SilverstripeMerchantApi
      * Pass an OrderDetails object to this function and collect the OrderToken from afterpay
      * if succesful. This order helps afterpay assess the preapproval
      * https://github.com/culturekings/afterpay/blob/master/docs/merchant/api.md#create-order
-     * https://docs.afterpay.com/nz-online-api-v1.html#orders
-     * @param  OrderDetails $order An object holding all the information for the request
-     * @return OrderToken|ApiException          The token for the preapproval process
+     * https://docs.afterpay.com/nz-online-api-v1.html#orders.
+     *
+     * @param OrderDetails $order An object holding all the information for the request
+     *
+     * @return ApiException|OrderToken The token for the preapproval process
      */
     public function createOrder(OrderDetails $order)
     {
@@ -291,20 +310,22 @@ class SilverstripeMerchantApi
                 OrderToken::class
             );
         }
+
         return $this->orderToken;
     }
 
     /**
-     * Capture the payment after the order has been placed
-     * @param  string $merchantReference Optional: Update the merchant reference
+     * Capture the payment after the order has been placed.
      *
-     * @return Payments|ApiException
+     * @param string $merchantReference Optional: Update the merchant reference
+     *
+     * @return ApiException|Payments
      */
     public function createPayment(string $orderTokenAsString = '', string $merchantReference = '')
     {
         if ($this->isServerAvailable) {
             if (! $orderTokenAsString) {
-                if ($this->orderToken !== null) {
+                if (null !== $this->orderToken) {
                     $orderTokenAsString = $this->orderToken->token;
                 }
             }
@@ -329,37 +350,40 @@ class SilverstripeMerchantApi
                 Payment::class
             );
         }
+
         return $this->paymentInfo;
     }
 
-    ############################
-    # internal do-ers
-    ############################
+    //###########################
+    // internal do-ers
+    //###########################
 
     /**
-     * Initialize the authorization field with the set merchant id and secret key
+     * Initialize the authorization field with the set merchant id and secret key.
      */
     protected function ping_end_point(bool $pingAgain = false): bool
     {
-        if ($this->isServerAvailable === null || $pingAgain) {
+        if (null === $this->isServerAvailable || $pingAgain) {
             $answer = MerchantApi::ping($this->getConnectionURL(), $this->client);
             $this->isServerAvailable = (bool) $answer;
         }
+
         return $this->isServerAvailable;
     }
 
     /**
-     * Initialize the authorization field with the set merchant id and secret key
+     * Initialize the authorization field with the set merchant id and secret key.
      */
     protected function setupAuthorization(bool $setupAgain = false): Authorization
     {
-        if ($this->authorization === null || $setupAgain) {
+        if (null === $this->authorization || $setupAgain) {
             $this->authorization = new Authorization(
                 $this->getConnectionURL(),
                 $this->Config()->get('merchant_id'),
                 $this->Config()->get('secret_key')
             );
         }
+
         return $this->authorization;
     }
 
@@ -367,7 +391,7 @@ class SilverstripeMerchantApi
     {
         //we need to make sure authorization is set up.
         $this->setupAuthorization();
-        if ($this->client === null || $setupAgain) {
+        if (null === $this->client || $setupAgain) {
             $this->client = new Client(
                 [
                     'base_uri' => $this->authorization->getEndpoint(),
@@ -377,6 +401,7 @@ class SilverstripeMerchantApi
                 ]
             );
         }
+
         return $this->client;
     }
 
@@ -390,12 +415,13 @@ class SilverstripeMerchantApi
 
     /**
      * Initialize the API with the configuration data from afterpay
-     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe
-     * @return Configuration|null
+     * Currently only the PAY_BY_INSTALLMENT configuration is collected**maybe.
+     *
+     * @return null|Configuration
      */
     protected function retrieveConfig(bool $getConfigAgain = false)
     {
-        if ($this->configurationInfo === [] || $getConfigAgain) {
+        if ([] === $this->configurationInfo || $getConfigAgain) {
             if ($this->findExpectationFile('configuration_details.json')) {
                 //look for local config details (FASTER)
                 $this->configurationInfo = $this->localExpecationFileToClass(
@@ -413,6 +439,7 @@ class SilverstripeMerchantApi
                 }
             }
         }
+
         return $this->configurationInfo;
     }
 
@@ -421,7 +448,7 @@ class SilverstripeMerchantApi
         $this->retrieveConfig();
         if ($this->configurationInfo) {
             foreach ($this->configurationInfo as $config) {
-                if ($config->getType() === 'PAY_BY_INSTALLMENT') {
+                if ('PAY_BY_INSTALLMENT' === $config->getType()) {
                     $this->minPrice = $config->getMaximumAmount()->getAmount();
                     $this->maxPrice = $config->getMinimumAmount()->getAmount();
                 }
@@ -434,9 +461,9 @@ class SilverstripeMerchantApi
         return $this->isTest ? $this::CONNECTION_URL_TEST : $this::CONNECTION_URL_LIVE;
     }
 
-    ########################################
-    # helpers
-    ########################################
+    //#######################################
+    // helpers
+    //#######################################
 
     protected function findExpectationFile(string $relativeFileName): string
     {
@@ -448,6 +475,7 @@ class SilverstripeMerchantApi
             }
             user_error('bad file specified: ' . $absoluteFileName);
         }
+
         return '';
     }
 
@@ -465,6 +493,7 @@ class SilverstripeMerchantApi
             }
         }
         user_error('Could not create expectation file.');
+
         return new $className();
     }
 }
