@@ -80,7 +80,7 @@ class SilverstripeMerchantApi
     /**
      * this.
      *
-     * @var null|SilverstripeMerchantApi
+     * @var SilverstripeMerchantApi
      */
     protected static $singleton_cache;
 
