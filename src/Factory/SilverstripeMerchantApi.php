@@ -326,7 +326,7 @@ class SilverstripeMerchantApi
         if ($this->isServerAvailable) {
             if (! $orderTokenAsString) {
                 if (null !== $this->orderToken) {
-                    $orderTokenAsString = $this->orderToken->token;
+                    $orderTokenAsString = $this->orderToken->getToken();
                 }
             }
             if ($orderTokenAsString) {
