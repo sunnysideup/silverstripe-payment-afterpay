@@ -60,7 +60,7 @@ class AfterpayEcommercePayment extends EcommercePayment
         return $fields;
     }
 
-    public function getPaymentFormFields(?float $amount = 0, ?Order $order = null): FieldList
+    public function getPaymentFormFields($amount = 0, ?Order $order = null): FieldList
     {
         $logo = '<img src="' . $this->Config()->logo . '" alt="Payments powered by Afterpay" />';
 
@@ -154,7 +154,6 @@ class AfterpayEcommercePayment extends EcommercePayment
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true)
-        ;
+            ->setIsServerAvailable(true);
     }
 }
