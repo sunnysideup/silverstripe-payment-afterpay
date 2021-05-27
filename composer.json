@@ -23,6 +23,11 @@
         "culturekings/afterpay": "^2.2",
         "silverstripe/recipe-cms": "^4.4"
     },
+    "extra": {
+        "expose": [
+            "client/images"
+        ]
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
