@@ -7,6 +7,7 @@ use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\View\Requirements;
@@ -85,11 +86,11 @@ class AfterpayEcommercePayment extends EcommercePayment
 
     /**
      * @param array     $data The form request data - see OrderForm
-     * @param OrderForm $form The form object submitted on
+     * @param Form $form The form object submitted on
      *
      * @return \Sunnysideup\Ecommerce\Money\Payment\EcommercePaymentResult
      */
-    public function processPayment($data, OrderForm $form)
+    public function processPayment($data, Form $form)
     {
         $order = $this->Order();
         $token = $this->getTokenFromAfterpay($order);
