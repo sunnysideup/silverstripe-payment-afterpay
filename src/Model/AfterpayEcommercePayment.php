@@ -85,8 +85,8 @@ class AfterpayEcommercePayment extends EcommercePayment
     }
 
     /**
-     * @param array     $data The form request data - see OrderForm
-     * @param Form $form The form object submitted on
+     * @param array $data The form request data - see OrderForm
+     * @param Form  $form The form object submitted on
      *
      * @return \Sunnysideup\Ecommerce\Money\Payment\EcommercePaymentResult
      */
@@ -155,6 +155,7 @@ class AfterpayEcommercePayment extends EcommercePayment
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true);
+            ->setIsServerAvailable(true)
+        ;
     }
 }
