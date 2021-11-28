@@ -92,7 +92,7 @@ class AfterpayEcommercePayment extends EcommercePayment
      */
     public function processPayment($data, Form $form)
     {
-        $order = $this->Order();
+        $order = $this->orderCached();
         $token = $this->getTokenFromAfterpay($order);
 
         return $this->executeURL($token);
