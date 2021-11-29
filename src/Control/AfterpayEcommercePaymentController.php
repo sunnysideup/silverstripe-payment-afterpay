@@ -9,7 +9,6 @@ use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use Sunnysideup\Ecommerce\Config\EcommerceConfig;
 use Sunnysideup\Ecommerce\Model\Order;
-use Sunnysideup\Ecommerce\Traits\OrderCached;
 
 class AfterpayEcommercePaymentController extends Controller
 {
@@ -29,8 +28,8 @@ class AfterpayEcommercePaymentController extends Controller
 
     public function confirm($request)
     {
-        $orderID = (int) $request->param('ID');
-        $order = OrderCached::get_order_cached($orderID);
+        $orderID = intval($request->param('ID'));
+        $order = Order::get_order_cached((int) $orderID);
         $orderToken = $request->getVar('orderToken');
         $success = 'SUCCESS' === $request->getVar('status');
         $payment = AfterpayEcommercePayment::get()->filter(
