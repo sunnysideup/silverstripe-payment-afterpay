@@ -8,9 +8,8 @@ use SilverStripe\Control\Director;
 use Sunnysideup\Afterpay\Factory\SilverstripeMerchantApi;
 use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use Sunnysideup\Ecommerce\Config\EcommerceConfig;
-use Sunnysideup\Ecommerce\Model\Order;
-
 use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
+use Sunnysideup\Ecommerce\Model\Order;
 
 class AfterpayEcommercePaymentController extends Controller
 {
