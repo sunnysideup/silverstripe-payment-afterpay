@@ -10,6 +10,8 @@ use Sunnysideup\Afterpay\Model\AfterpayEcommercePayment;
 use Sunnysideup\Ecommerce\Config\EcommerceConfig;
 use Sunnysideup\Ecommerce\Model\Order;
 
+use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
+
 class AfterpayEcommercePaymentController extends Controller
 {
     private static $allowed_actions = [
@@ -39,7 +41,7 @@ class AfterpayEcommercePaymentController extends Controller
             ]
         )->first();
         if ($payment) {
-            $payment->Status = 'Failure';
+            $payment->Status = EcommercePayment::FAILURE_STATUS;
             if ($success) {
                 if ($order) {
                     $api = $this->myAfterpayApi();
@@ -47,7 +49,7 @@ class AfterpayEcommercePaymentController extends Controller
                     if ($response instanceof Payment) {
                         $payment->AfterpayConfirmationToken = serialize($response);
                         if ('APPROVED' === $response->getStatus()) {
-                            $payment->Status = 'Success';
+                            $payment->Status = EcommercePayment::SUCCESS_STATUS;
                         }
                     }
                 }
