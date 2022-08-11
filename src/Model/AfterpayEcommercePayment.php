@@ -19,7 +19,7 @@ use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
 use Sunnysideup\Ecommerce\Model\Order;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentFailure;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessing;
-
+use Exception;
 /**
  *@author nicolaas[at]sunnysideup.co.nz
  *@description: OrderNumber and PaymentID
@@ -134,7 +134,16 @@ class AfterpayEcommercePayment extends EcommercePayment
 
             $api = $this->myAfterpayApi();
             $tokenObject = $api->createOrder($data);
-            $this->AfterpayResponse = serialize($tokenObject);
+            try {
+                $this->AfterpayResponse = serialize($tokenObject);
+            } catch (Exception $e) {
+                //do nothing ...
+            }
+            $this->DebugMessage =
+                '<pre>'.print_r($data, true) . '</pre>' .
+                '<hr />' .
+                '<pre>'.print_r($tokenObject, true) . '</pre>';
+
             if ($tokenObject instanceof OrderToken) {
                 $tokenString = $tokenObject->getToken();
                 $this->AfterpayToken = $tokenString;
