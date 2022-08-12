@@ -135,15 +135,10 @@ class AfterpayEcommercePayment extends EcommercePayment
             $api = $this->myAfterpayApi();
             $tokenObject = $api->createOrder($data);
             try {
-                $this->AfterpayResponse = serialize($tokenObject);
+                $this->AfterpayResponse = substr(serialize($tokenObject), 0, 1000);
             } catch (Exception $e) {
                 //do nothing ...
             }
-            $this->DebugMessage =
-                '<pre>'.print_r($data, true) . '</pre>' .
-                '<hr />' .
-                '<pre>'.print_r($tokenObject, true) . '</pre>';
-
             if ($tokenObject instanceof OrderToken) {
                 $tokenString = $tokenObject->getToken();
                 $this->AfterpayToken = $tokenString;
