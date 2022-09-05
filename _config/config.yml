@@ -1,0 +1,8 @@
+---
+Name: afterpay_config
+After: framework/routes#coreroutes
+---
+
+Sunnysideup\Ecommerce\Model\Config\EcommerceDBConfig:
+  extensions:
+    - Sunnysideup\Afterpay\Extension\AfterpayEcommerceConfigExtension

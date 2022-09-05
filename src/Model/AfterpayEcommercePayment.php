@@ -159,7 +159,7 @@ class AfterpayEcommercePayment extends EcommercePayment
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true)
+            ->setIsServerAvailable(EcommerceConfig::inst()->ShowAfterpayOption)
         ;
     }
 }

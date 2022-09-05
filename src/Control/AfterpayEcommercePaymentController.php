@@ -90,7 +90,7 @@ class AfterpayEcommercePaymentController extends Controller
                 EcommerceConfig::inst()->AfterpayMinValue,
                 EcommerceConfig::inst()->AfterpayMaxValue
             )
-            ->setIsServerAvailable(true)
+            ->setIsServerAvailable(EcommerceConfig::inst()->ShowAfterpayOption)
         ;
     }
 }
