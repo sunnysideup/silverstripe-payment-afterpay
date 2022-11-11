@@ -79,7 +79,7 @@ class AfterpayEcommerceConfigExtension extends DataExtension
                     ),
                 HTMLEditorField::create('NoAfterpayMessage', 'Afterpay not available')
                     ->setDescription('Message to display when Afterpay is not available due to limits on the
-                total cost of the items in the cart'),
+                total cost of the items in the cart, please ensure it is in line with the minimum/maximum set value above.'),
             ]
         );
     }
