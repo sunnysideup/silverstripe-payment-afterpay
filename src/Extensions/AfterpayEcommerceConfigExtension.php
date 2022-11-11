@@ -37,6 +37,7 @@ class AfterpayEcommerceConfigExtension extends DataExtension
         'ShowAfterpayOption' => 'Boolean',
         'AfterpayMinValue' => 'Int',
         'AfterpayMaxValue' => 'Int',
+        'NoAfterpayMessage' => 'HTMLText',
     ];
 
     /**
@@ -76,6 +77,9 @@ class AfterpayEcommerceConfigExtension extends DataExtension
                         Set to zero to turn off AfterPay.
                     '
                     ),
+                HTMLEditorField::create('NoAfterpayMessage', 'Afterpay not available')
+                    ->setDescription('Message to display when Afterpay is not available due to limits on the
+                total cost of the items in the cart'),
             ]
         );
     }
