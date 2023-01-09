@@ -20,8 +20,8 @@
     },
     "require": {
         "sunnysideup/ecommerce": "*",
-        "culturekings/afterpay": "^2",
-        "silverstripe/recipe-cms": "^4.10"
+        "culturekings/afterpay": "*",
+        "silverstripe/recipe-cms": "*"
     },
     "extra": {
         "expose": [
