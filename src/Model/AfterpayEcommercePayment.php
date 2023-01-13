@@ -3,6 +3,7 @@
 namespace Sunnysideup\Afterpay\Model;
 
 use CultureKings\Afterpay\Model\Merchant\OrderToken;
+use Exception;
 use SilverStripe\CMS\Controllers\ContentController;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
@@ -19,7 +20,7 @@ use Sunnysideup\Ecommerce\Model\Money\EcommercePayment;
 use Sunnysideup\Ecommerce\Model\Order;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentFailure;
 use Sunnysideup\Ecommerce\Money\Payment\PaymentResults\EcommercePaymentProcessing;
-use Exception;
+
 /**
  *@author nicolaas[at]sunnysideup.co.nz
  *@description: OrderNumber and PaymentID
@@ -134,6 +135,7 @@ class AfterpayEcommercePayment extends EcommercePayment
 
             $api = $this->myAfterpayApi();
             $tokenObject = $api->createOrder($data);
+
             try {
                 $this->AfterpayResponse = substr(serialize($tokenObject), 0, 1000);
             } catch (Exception $e) {

@@ -2,30 +2,13 @@
 
 namespace Sunnysideup\Afterpay\Extensions;
 
-use Page;
-use PhotoWarehouse\App\Control\TradeMeAssignBrandController;
 use PhotoWarehouse\App\Environment\MyEnvironmentManager;
-
-use PhotoWarehouse\App\Model\PriceSpyCache;
-use SilverStripe\AssetAdmin\Forms\UploadField;
-use SilverStripe\Assets\Image;
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Forms\CheckboxField;
-use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
-use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\NumericField;
-use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\TextField;
-use SilverStripe\Forms\TreeDropdownField;
-
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
 use SilverStripe\ORM\DataExtension;
-use SilverStripe\ORM\FieldType\DBField;
-use SilverStripe\UserForms\Model\UserDefinedForm;
 
 /**
  * EcommerceRole provides customisations to the {@link Member}
@@ -49,10 +32,8 @@ class AfterpayEcommerceConfigExtension extends DataExtension
         'AfterpayMaxValue' => 1000,
     ];
 
-
     public function UpdateCMSFields(FieldList $fields)
     {
-
         // Hire purchase fields
         $fields->addFieldToTab('Root.Payments', CheckboxField::create('PayBeforeCollect'));
         $fields->addFieldsToTab(
