@@ -173,7 +173,7 @@ class OrderToAfterpayConverter extends OrderConverter
 
     protected function cleanupCurrencies($value)
     {
-        $value = str_replace(',', '', $value);
+        $value = str_replace(',', '', (string) $value);
 
         return floatval($value);
     }
