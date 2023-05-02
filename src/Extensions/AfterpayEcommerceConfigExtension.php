@@ -2,7 +2,6 @@
 
 namespace Sunnysideup\Afterpay\Extensions;
 
-use PhotoWarehouse\App\Environment\MyEnvironmentManager;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
@@ -70,9 +69,4 @@ class AfterpayEcommerceConfigExtension extends DataExtension
         return $this->owner->AfterpayMaxValue > 0;
     }
 
-    // public function onBeforeWrite()
-    // {
-    //     parent::onBeforeWrite();
-    //     //$this->owner->ShowAfterpayOption = ! (bool) MyEnvironmentManager::is_photovideo_site();
-    // }
 }
