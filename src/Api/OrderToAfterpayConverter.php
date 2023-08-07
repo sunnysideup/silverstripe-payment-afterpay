@@ -44,6 +44,7 @@ class OrderToAfterpayConverter extends OrderConverter
         }
         $billingLine1 = $this->implodeAndTrim(
             [
+                $this->billingAddress->CompanyName,
                 $this->billingAddress->Address,
                 $this->billingAddress->Address2,
             ]
@@ -73,6 +74,7 @@ class OrderToAfterpayConverter extends OrderConverter
         }
         $shippingLine1 = $this->implodeAndTrim(
             [
+                $this->shippingAddress->CompanyName,
                 $this->shippingAddress->Address,
                 $this->shippingAddress->Address2,
             ]
