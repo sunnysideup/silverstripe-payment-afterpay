@@ -21,7 +21,7 @@
     "require": {
         "silverstripe/cms": "^4.0 || ^5.0",
         "sunnysideup/ecommerce": "*",
-        "culturekings/afterpay": "*"
+        "sunnysideup/afterpay-basics": "dev-master"
     },
     "extra": {
         "expose": [
