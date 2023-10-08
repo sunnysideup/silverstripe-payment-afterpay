@@ -64,14 +64,25 @@ class AfterpayEcommercePaymentController extends Controller
         return $this->redirect('/404-can-not-find-order');
     }
 
+    public static function get_url_segment(): string
+    {
+        return 'afterpaypayment';
+    }
+
     public function Link($action = null): string
     {
-        return '/afterpaypayment/';
+        return '/' . self::get_url_segment() . '/' . $action;
     }
 
     public static function create_link($order): string
     {
-        return Director::absoluteURL('afterpaypayment/confirm/' . $order->ID . '/');
+        return Director::absoluteURL(
+            Controller::join_links(
+                self::get_url_segment(),
+                'confirm',
+                $order->ID
+            )
+        );
     }
 
     public function ShowAfterpay($total): bool
@@ -79,9 +90,7 @@ class AfterpayEcommercePaymentController extends Controller
         return $this->myAfterpayApi()->canProcessPayment(floatval($total));
     }
 
-    protected function capturePayment()
-    {
-    }
+    protected function capturePayment() {}
 
     protected function myAfterpayApi()
     {
