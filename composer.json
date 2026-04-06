@@ -1,33 +1,33 @@
 {
-    "name": "sunnysideup/payment-afterpay",
-    "type": "silverstripe-vendormodule",
-    "description": "Integrate easily with the api.afterpay.com API",
-    "license": "BSD-3-Clause",
-    "authors": [
-        {
-            "name": "tristan",
-            "email": "tristan@sunnysideup.co.nz"
-        },
-        {
-            "name": "nicolaas",
-            "email": "github@sunnysideup.co.nz"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Sunnysideup\\Afterpay\\": "src/"
-        }
+  "name": "sunnysideup/payment-afterpay",
+  "type": "silverstripe-vendormodule",
+  "description": "Integrate easily with the api.afterpay.com API",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "tristan",
+      "email": "tristan@sunnysideup.co.nz"
     },
-    "require": {
-        "silverstripe/cms": "^4.0 || ^5.0",
-        "sunnysideup/ecommerce": "*",
-        "sunnysideup/afterpay-basics": "dev-master"
-    },
-    "extra": {
-        "expose": [
-            "client/images"
-        ]
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    {
+      "name": "nicolaas",
+      "email": "github@sunnysideup.co.nz"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Sunnysideup\\Afterpay\\": "src/"
+    }
+  },
+  "require": {
+    "silverstripe/cms": "^4.0 || ^5.0",
+    "sunnysideup/ecommerce": "5.x-dev",
+    "sunnysideup/afterpay-basics": "5.x-dev"
+  },
+  "extra": {
+    "expose": [
+      "client/images"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
